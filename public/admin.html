@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#d9ef55"><title>JMUNZ Admin</title><style>
+:root{--acid:#d9ef55;--orange:#ff6c3a;--blue:#62c7df;--coral:#ef746d;--cream:#f3efe3;--green:#173f31;--ink:#101412;--line:rgba(16,20,18,.16)}*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Arial,Helvetica,sans-serif;background:var(--cream);color:var(--ink)}button,input,textarea,select{font:inherit}.hidden{display:none!important}.admin-grid-bg{position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(16,20,18,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(16,20,18,.06) 1px,transparent 1px);background-size:40px 40px}.login-screen{min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(135deg,var(--acid),#f3efe3 70%)}.login-card{position:relative;width:min(520px,100%);padding:48px;border:2px solid var(--ink);border-radius:28px;background:rgba(243,239,227,.9);box-shadow:18px 18px 0 var(--ink)}.admin-logo{display:flex;align-items:center;gap:12px}.admin-logo>b{width:48px;height:48px;border:2px solid;border-radius:50%;display:grid;place-items:center;font:900 2rem Impact,Arial;transform:rotate(-7deg)}.admin-logo span{font-size:.66rem;font-weight:900;letter-spacing:.09em}.eyebrow{font-size:.62rem;font-weight:900;letter-spacing:.18em;margin:30px 0 14px}.login-card h1{font:900 clamp(3.7rem,10vw,7rem)/.78 Impact,'Arial Narrow',sans-serif;letter-spacing:-.04em;margin:0 0 34px}.login-card label{display:block;font-size:.65rem;font-weight:800;letter-spacing:.12em}.login-card input{width:100%;height:58px;margin-top:9px;border:2px solid;border-radius:12px;background:white;padding:0 18px;font-size:1.4rem;letter-spacing:.35em}.login-card>button{width:100%;height:58px;margin-top:14px;border:0;border-radius:999px;background:var(--ink);color:var(--acid);font-size:.68rem;font-weight:900;letter-spacing:.12em;display:flex;align-items:center;justify-content:space-between;padding:0 22px}.login-card>a{display:inline-block;margin-top:20px;color:inherit;font-size:.65rem;font-weight:700}.login-message{min-height:20px;color:#c72222;font-size:.7rem}.dashboard{min-height:100vh;display:grid;grid-template-columns:260px 1fr}.sidebar{position:fixed;left:0;top:0;bottom:0;width:260px;padding:26px 22px;background:var(--green);color:var(--cream);display:flex;flex-direction:column;z-index:10}.sidebar nav{margin-top:64px}.nav-item{width:100%;border:0;border-bottom:1px solid rgba(255,255,255,.15);background:none;color:inherit;text-align:left;padding:19px 4px;font-size:.72rem;font-weight:800;letter-spacing:.08em}.nav-item span{color:var(--acid);font-size:.56rem;margin-right:13px}.nav-item.active{color:var(--acid)}.sidebar-bottom{margin-top:auto;display:grid;gap:10px}.sidebar-bottom a,.sidebar-bottom button{height:42px;border:1px solid rgba(255,255,255,.35);border-radius:999px;background:none;color:inherit;display:grid;place-items:center;text-decoration:none;font-size:.61rem;font-weight:800;letter-spacing:.1em}.admin-main{grid-column:2;padding:0 36px 60px}.admin-topbar{height:112px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}.admin-topbar p{font-size:.58rem;font-weight:800;letter-spacing:.15em;margin:0 0 7px}.admin-topbar h2{font:900 2.3rem Impact,'Arial Narrow';margin:0}.status-chip{border:1px solid;border-radius:999px;padding:10px 13px;font-size:.57rem;font-weight:800;letter-spacing:.1em}.status-chip i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#30c964;margin-right:7px;box-shadow:0 0 10px #30c964}.admin-view{display:none;padding-top:36px}.admin-view.active{display:block}.view-actions{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:25px}.view-actions h3{font:900 2rem Impact,'Arial Narrow';margin:0 0 6px}.view-actions p{margin:0;color:rgba(16,20,18,.65);font-size:.78rem}.primary,.secondary,.danger{height:46px;border-radius:999px;padding:0 18px;font-size:.62rem;font-weight:900;letter-spacing:.1em}.primary{border:0;background:var(--ink);color:var(--acid)}.secondary{border:1px solid;background:transparent}.danger{border:0;background:#ff3b30;color:#fff}.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:25px}.stats-row article{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.4);padding:18px}.stats-row span{display:block;font-size:.55rem;font-weight:800;letter-spacing:.12em}.stats-row b{display:block;font:900 2.8rem Impact;margin-top:12px}.product-admin-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.admin-product-card{border:1px solid var(--line);border-radius:22px;background:#fff;overflow:hidden;transition:.2s}.admin-product-card:hover{transform:translateY(-4px);box-shadow:0 18px 35px rgba(16,20,18,.1)}.admin-product-image{height:270px;background:#ddd9d3;position:relative;display:grid;place-items:center;overflow:hidden}.admin-product-image img{width:100%;height:100%;object-fit:contain}.admin-product-image .status{position:absolute;left:12px;top:12px;border-radius:999px;padding:7px 9px;background:var(--ink);color:white;font-size:.5rem;font-weight:900;letter-spacing:.1em}.admin-product-image .status.sold{background:#ff3b30}.admin-product-info{padding:17px}.admin-product-info h4{font:900 1.25rem Impact,'Arial Narrow';margin:0 0 6px}.admin-product-info p{font-size:.68rem;color:rgba(16,20,18,.65);min-height:32px}.admin-product-bottom{display:flex;align-items:center;justify-content:space-between}.admin-product-bottom strong{font:900 1.1rem Impact}.admin-product-bottom button{border:1px solid;border-radius:999px;background:none;padding:9px 13px;font-size:.56rem;font-weight:900}.settings-form{display:grid;grid-template-columns:1fr 1fr;gap:18px;border:1px solid var(--line);border-radius:24px;background:rgba(255,255,255,.5);padding:26px}.settings-form label,.fields-column label{font-size:.61rem;font-weight:800;letter-spacing:.08em}.settings-form small{display:block;font-weight:400;letter-spacing:0;margin:5px 0}.settings-form input,.settings-form textarea,.settings-form select,.fields-column input,.fields-column textarea,.fields-column select{width:100%;margin-top:8px;border:1px solid rgba(16,20,18,.25);border-radius:10px;background:#fff;padding:12px;outline:none}.settings-form input,.settings-form select,.fields-column input,.fields-column select{height:46px}.settings-form :focus,.fields-column :focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(23,63,49,.1)}.wide{grid-column:1/-1}.form-actions{display:flex;align-items:center;gap:14px}.orders-table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px;background:white}.orders-table-wrap table{width:100%;border-collapse:collapse;min-width:850px}.orders-table-wrap th,.orders-table-wrap td{text-align:left;padding:15px;border-bottom:1px solid var(--line);font-size:.66rem}.orders-table-wrap th{font-size:.54rem;letter-spacing:.11em;background:#f4f1e8}.order-status{display:inline-block;padding:6px 8px;border-radius:999px;background:#ddd;font-weight:900}.order-status.paid{background:#c9f0d2;color:#16622e}.order-status.failed,.order-status.cancelled{background:#ffd6d3;color:#9c1f18}.modal-backdrop{position:fixed;inset:0;z-index:50;background:rgba(16,20,18,.65);backdrop-filter:blur(7px);display:grid;place-items:center;padding:20px}.product-modal-card{width:min(880px,100%);max-height:94vh;overflow:auto;border-radius:26px;background:var(--cream);box-shadow:0 35px 80px rgba(0,0,0,.3)}.product-modal-card>header{display:flex;justify-content:space-between;align-items:center;padding:22px 26px;border-bottom:1px solid var(--line)}.product-modal-card header h2{font:900 2rem Impact;margin:0}.product-modal-card header .eyebrow{margin:0 0 5px}.close-modal{border:1px solid;border-radius:50%;background:none;width:40px;height:40px;font-size:1.5rem}.product-form-grid{display:grid;grid-template-columns:300px 1fr;gap:25px;padding:26px}.image-preview{height:360px;border:2px dashed rgba(16,20,18,.3);border-radius:18px;background:#ddd9d3;display:grid;place-items:center;text-align:center;font:900 1.2rem Impact;overflow:hidden}.image-preview img{width:100%;height:100%;object-fit:contain}.upload-button{height:44px;border:1px solid;border-radius:999px;display:grid;place-items:center;margin-top:12px;font-size:.59rem;font-weight:900;letter-spacing:.1em}.upload-button input{display:none}.image-column small{display:block;margin-top:9px;font-size:.6rem;color:rgba(16,20,18,.6)}.fields-column{display:grid;gap:14px}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}.toggle-row{display:grid;gap:10px;margin-top:4px}.toggle-row label{display:flex;align-items:center;gap:9px;text-transform:none;letter-spacing:0}.toggle-row input{display:none}.toggle-row span{width:38px;height:21px;border-radius:20px;background:#aaa;position:relative}.toggle-row span:after{content:'';position:absolute;width:17px;height:17px;left:2px;top:2px;border-radius:50%;background:white;transition:.2s}.toggle-row input:checked+span{background:var(--green)}.toggle-row input:checked+span:after{transform:translateX(17px)}.product-modal-card>footer{display:flex;justify-content:space-between;align-items:center;padding:18px 26px;border-top:1px solid var(--line)}.product-modal-card footer>div{display:flex;gap:9px}.form-message{padding:0 26px 18px;margin:0;color:#b52222;font-size:.7rem}.admin-toast{position:fixed;z-index:100;right:22px;bottom:22px;background:var(--ink);color:var(--acid);border-radius:999px;padding:14px 20px;font-size:.61rem;font-weight:900;letter-spacing:.09em;transform:translateY(90px);transition:.3s}.admin-toast.show{transform:none}@media(max-width:1050px){.product-admin-grid{grid-template-columns:1fr 1fr}.dashboard{grid-template-columns:210px 1fr}.sidebar{width:210px}.admin-main{padding-inline:25px}}@media(max-width:760px){.dashboard{display:block}.sidebar{position:static;width:auto;height:auto;padding:16px;display:block}.sidebar nav{margin:20px 0;display:flex;overflow:auto}.nav-item{min-width:140px;border:1px solid rgba(255,255,255,.18)}.sidebar-bottom{display:flex}.sidebar-bottom>*{flex:1}.admin-main{padding:0 16px 40px}.admin-topbar{height:85px}.status-chip{display:none}.stats-row{grid-template-columns:1fr 1fr}.product-admin-grid{grid-template-columns:1fr}.settings-form{grid-template-columns:1fr}.wide{grid-column:auto}.product-form-grid{grid-template-columns:1fr}.image-preview{height:280px}.view-actions{align-items:flex-start;flex-direction:column}.login-card{padding:30px;box-shadow:9px 9px 0 var(--ink)}}
+
+.reset-demo{border:1px solid rgba(255,255,255,.2);background:transparent;color:inherit;padding:9px 10px;border-radius:8px;font-size:.58rem;font-weight:800;letter-spacing:.08em;margin-bottom:8px;cursor:pointer}
+.preview-admin-note{position:fixed;right:18px;bottom:18px;z-index:1000;background:#d9ef55;color:#101412;padding:9px 13px;border-radius:999px;font:800 .56rem Arial,sans-serif;letter-spacing:.1em}
+</style></head>
+<body>
+  <div class="admin-grid-bg"></div>
+  <section class="login-screen" id="login-screen">
+    <form class="login-card" id="login-form">
+      <div class="admin-logo"><b>13</b><span>JMUNZ<br>CONTROL ROOM</span></div>
+      <p class="eyebrow">PRIVATE ADMIN ACCESS</p>
+      <h1>ENTER THE<br>FACTORY.</h1>
+      <label>Password<input id="admin-password" type="password" inputmode="numeric" autocomplete="current-password" placeholder="••••" required></label>
+      <button type="submit">UNLOCK DASHBOARD <span>→</span></button>
+      <p class="login-message" id="login-message"></p>
+      <a href="/">← Return to storefront</a>
+    </form>
+  </section>
+
+  <div class="dashboard hidden" id="dashboard">
+    <aside class="sidebar">
+      <div class="admin-logo"><b>13</b><span>JMUNZ<br>ADMIN</span></div>
+      <nav>
+        <button class="nav-item active" data-view="products"><span>01</span> Products</button>
+        <button class="nav-item" data-view="settings"><span>02</span> Site Settings</button>
+        <button class="nav-item" data-view="orders"><span>03</span> Orders</button>
+      </nav>
+      <div class="sidebar-bottom"><a href="/" target="_blank">OPEN STORE ↗</a><button id="logout-button">LOG OUT</button></div>
+    </aside>
+    <main class="admin-main">
+      <header class="admin-topbar"><div><p>JMUNZ MERCH FACTORY</p><h2 id="view-title">PRODUCTS</h2></div><div class="status-chip"><i></i> DASHBOARD ONLINE</div></header>
+
+      <section class="admin-view active" id="view-products">
+        <div class="view-actions"><div><h3>Merch inventory</h3><p>Add a new shirt, change prices, replace images, mark sold out, or hide products.</p></div><button class="primary" id="add-product-button">＋ ADD NEW PRODUCT</button></div>
+        <div class="stats-row"><article><span>TOTAL PRODUCTS</span><b id="stat-total">0</b></article><article><span>LIVE PRODUCTS</span><b id="stat-live">0</b></article><article><span>SOLD OUT</span><b id="stat-sold">0</b></article><article><span>FEATURED</span><b id="stat-featured">0</b></article></div>
+        <div class="product-admin-grid" id="product-admin-grid"></div>
+      </section>
+
+      <section class="admin-view" id="view-settings">
+        <div class="view-actions"><div><h3>Website settings</h3><p>Change the main text, links, store information, and currency.</p></div></div>
+        <form class="settings-form" id="settings-form">
+          <label>Store name<input name="storeName" required></label>
+          <label>Hero title <small>Use a new line for the second line.</small><textarea name="heroTitle" rows="2" required></textarea></label>
+          <label class="wide">Hero description<textarea name="heroSubtitle" rows="3" required></textarea></label>
+          <label>Shop title<textarea name="shopTitle" rows="2" required></textarea></label>
+          <label>Currency<select name="currency"><option value="USD">USD — US Dollar</option><option value="LKR">LKR — Sri Lankan Rupee</option></select></label>
+          <label class="wide">Shop description<textarea name="shopDescription" rows="3"></textarea></label>
+          <label>YouTube channel URL<input name="youtubeUrl" type="url"></label>
+          <label>Official store URL<input name="officialStoreUrl" type="url"></label>
+          <div class="wide form-actions"><button class="primary" type="submit">SAVE WEBSITE SETTINGS</button><span id="settings-state"></span></div>
+        </form>
+      </section>
+
+      <section class="admin-view" id="view-orders">
+        <div class="view-actions"><div><h3>Customer orders</h3><p>PayHere orders and their latest payment status.</p></div><button id="refresh-orders">↻ REFRESH</button></div>
+        <div class="orders-table-wrap"><table><thead><tr><th>ORDER</th><th>CUSTOMER</th><th>ITEMS</th><th>AMOUNT</th><th>STATUS</th><th>DATE</th></tr></thead><tbody id="orders-body"></tbody></table></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="product-modal">
+    <form class="product-modal-card" id="product-form">
+      <header><div><p class="eyebrow">PRODUCT EDITOR</p><h2 id="product-form-title">ADD NEW PRODUCT</h2></div><button type="button" class="close-modal" aria-label="Close">×</button></header>
+      <input type="hidden" name="id">
+      <div class="product-form-grid">
+        <div class="image-column">
+          <div class="image-preview" id="image-preview"><span>UPLOAD<br>PRODUCT IMAGE</span></div>
+          <label class="upload-button">CHOOSE IMAGE<input name="image" id="product-image" type="file" accept="image/png,image/jpeg,image/webp"></label>
+          <small>PNG, JPG, or WebP. Maximum 5 MB.</small>
+        </div>
+        <div class="fields-column">
+          <label>Product name<input name="name" required maxlength="100"></label>
+          <div class="two-col"><label>Price<input name="price" type="number" min="0" step="0.01" required></label><label>Category<select name="category"><option value="hoodie">Hoodie</option><option value="tee">T-Shirt</option><option value="accessory">Accessory</option></select></label></div>
+          <label>Description<textarea name="description" rows="3" maxlength="240"></textarea></label>
+          <label>Product checkout URL<input name="productUrl" type="url" placeholder="https://..."></label>
+          <label>Display order<input name="order" type="number" min="0" step="1" value="1"></label>
+          <div class="toggle-row"><label><input name="active" type="checkbox" checked><span></span>Visible on website</label><label><input name="featured" type="checkbox" checked><span></span>Featured in swipe section</label><label><input name="soldOut" type="checkbox"><span></span>Sold out</label></div>
+        </div>
+      </div>
+      <footer><button type="button" class="danger hidden" id="delete-product">DELETE PRODUCT</button><div><button type="button" class="secondary close-modal">CANCEL</button><button type="submit" class="primary">SAVE PRODUCT</button></div></footer>
+      <p class="form-message" id="product-form-message"></p>
+    </form>
+  </div>
+  <div class="admin-toast" id="admin-toast"></div>
+  <script>
+let token = sessionStorage.getItem('jmunz_admin_token') || '';
+let products = [];
+let settings = {};
+
+const authHeaders = () => ({
+  'Authorization': `Bearer ${token}`,
+  'Content-Type': 'application/json'
+});
+
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+const loginScreen = $('#login-screen');
+const dashboard = $('#dashboard');
+const loginForm = $('#login-form');
+const loginMessage = $('#login-message');
+
+function toast(text) {
+  const t = $('#admin-toast');
+  t.textContent = text;
+  t.classList.add('show');
+  clearTimeout(toast.t);
+  toast.t = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function showLogin() {
+  loginScreen.classList.remove('hidden');
+  dashboard.classList.add('hidden');
+}
+
+function showDashboard() {
+  loginScreen.classList.add('hidden');
+  dashboard.classList.remove('hidden');
+  loadEverything();
+}
+
+loginForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const password = $('#admin-password').value;
+  try {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      token = data.token;
+      sessionStorage.setItem('jmunz_admin_token', token);
+      loginMessage.textContent = '';
+      $('#admin-password').value = '';
+      showDashboard();
+    } else {
+      loginMessage.textContent = data.error || 'Login failed';
+    }
+  } catch (err) {
+    loginMessage.textContent = 'Server error';
+  }
+});
+
+$('#logout-button').addEventListener('click', () => {
+  sessionStorage.removeItem('jmunz_admin_token');
+  token = '';
+  showLogin();
+});
+
+$$('.nav-item').forEach(btn => btn.addEventListener('click', () => {
+  const view = btn.dataset.view;
+  $$('.nav-item').forEach(x => x.classList.toggle('active', x === btn));
+  $$('.admin-view').forEach(x => x.classList.toggle('active', x.id === `view-${view}`));
+  $('#view-title').textContent = view.toUpperCase();
+  if (view === 'orders') loadOrders();
+}));
+
+function money(v) {
+  try {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: settings.currency || 'USD' }).format(v);
+  } catch {
+    return '$' + Number(v).toFixed(2);
+  }
+}
+
+function esc(v) {
+  return String(v ?? '').replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[c]));
+}
+
+async function loadEverything() {
+  try {
+    const pRes = await fetch('/api/products');
+    products = await pRes.json();
+    const sRes = await fetch('/api/settings');
+    settings = await sRes.json();
+    
+    renderProducts();
+    renderSettings();
+  } catch (err) {
+    toast('Error loading data');
+  }
+}
+
+function renderProducts() {
+  const grid = $('#product-admin-grid');
+  grid.innerHTML = products.sort((a, b) => (a.order || 0) - (b.order || 0)).map(p => `
+    <article class="admin-product-card">
+      <div class="admin-product-image">
+        <span class="status ${p.soldOut ? 'sold' : ''}">${p.soldOut ? 'SOLD OUT' : p.active ? 'LIVE' : 'HIDDEN'}</span>
+        <img src="${esc(p.image)}" alt="${esc(p.name)}">
+      </div>
+      <div class="admin-product-info">
+        <h4>${esc(p.name)}</h4>
+        <p>${esc(p.description || 'No description')}</p>
+        <div class="admin-product-bottom">
+          <strong>${money(p.price)}</strong>
+          <button data-edit="${esc(p.id)}">EDIT PRODUCT</button>
+        </div>
+      </div>
+    </article>
+  `).join('') || '<p>No products yet. Add the first product.</p>';
+
+  $('#stat-total').textContent = products.length;
+  $('#stat-live').textContent = products.filter(p => p.active).length;
+  $('#stat-sold').textContent = products.filter(p => p.soldOut).length;
+  $('#stat-featured').textContent = products.filter(p => p.featured).length;
+  $$('[data-edit]').forEach(b => b.addEventListener('click', () => openProductModal(b.dataset.edit)));
+}
+
+function renderSettings() {
+  const f = $('#settings-form');
+  Object.entries(settings).forEach(([k, v]) => {
+    if (f.elements[k]) f.elements[k].value = v ?? '';
+  });
+}
+
+$('#settings-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const formData = Object.fromEntries(new FormData(e.currentTarget).entries());
+  try {
+    const res = await fetch('/api/admin/settings', {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify(formData)
+    });
+    if (res.ok) {
+      settings = await res.json();
+      $('#settings-state').textContent = 'Saved ✓';
+      toast('WEBSITE SETTINGS SAVED');
+    } else {
+      toast('Failed to save settings');
+    }
+  } catch (err) {
+    toast('Error saving settings');
+  }
+});
+
+const modal = $('#product-modal'), form = $('#product-form'), preview = $('#image-preview');
+let editingId = null;
+
+function openProductModal(id = null) {
+  editingId = id;
+  form.reset();
+  form.elements.active.checked = true;
+  form.elements.featured.checked = true;
+  form.elements.order.value = products.length + 1;
+  $('#product-form-message').textContent = '';
+  $('#delete-product').classList.toggle('hidden', !id);
+  $('#product-form-title').textContent = id ? 'EDIT PRODUCT' : 'ADD NEW PRODUCT';
+  
+  if (id) {
+    const p = products.find(x => x.id === id);
+    if (!p) return;
+    for (const key of ['id', 'name', 'price', 'category', 'description', 'productUrl', 'order'])
+      if (form.elements[key]) form.elements[key].value = p[key] ?? '';
+    form.elements.active.checked = !!p.active;
+    form.elements.featured.checked = !!p.featured;
+    form.elements.soldOut.checked = !!p.soldOut;
+    preview.innerHTML = `<img src="${esc(p.image)}" alt="">`;
+    pendingImage = p.image;
+  } else {
+    preview.innerHTML = '<span>UPLOAD<br>PRODUCT IMAGE</span>';
+    pendingImage = '';
+  }
+  modal.classList.remove('hidden');
+}
+
+function closeProductModal() {
+  modal.classList.add('hidden');
+  editingId = null;
+}
+
+$('#add-product-button').addEventListener('click', () => openProductModal());
+$$('.close-modal').forEach(b => b.addEventListener('click', closeProductModal));
+modal.addEventListener('click', e => { if (e.target === modal) closeProductModal(); });
+
+let pendingImage = '';
+$('#product-image').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    pendingImage = reader.result;
+    preview.innerHTML = `<img src="${reader.result}" alt="Preview">`;
+  };
+  reader.readAsDataURL(file);
+});
+
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!confirm('Are you sure you want to save this product?')) return;
+  const fd = Object.fromEntries(new FormData(form).entries());
+  const id = editingId || ('product-' + Date.now());
+  const item = {
+    id,
+    name: fd.name,
+    price: Number(fd.price),
+    category: fd.category,
+    description: fd.description || '',
+    productUrl: fd.productUrl || '',
+    order: Number(fd.order) || products.length + 1,
+    active: form.elements.active.checked,
+    featured: form.elements.featured.checked,
+    soldOut: form.elements.soldOut.checked,
+    image: pendingImage || ''
+  };
+
+  try {
+    const res = await fetch(editingId ? `/api/admin/products/${editingId}` : '/api/admin/products', {
+      method: editingId ? 'PUT' : 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify(item)
+    });
+    if (res.ok) {
+      await loadEverything();
+      closeProductModal();
+      toast(editingId ? 'PRODUCT UPDATED' : 'NEW PRODUCT ADDED');
+    } else {
+      $('#product-form-message').textContent = 'Failed to save product';
+    }
+  } catch (err) {
+    $('#product-form-message').textContent = 'Error saving product';
+  }
+});
+
+$('#delete-product').addEventListener('click', async () => {
+  if (!editingId || !confirm('Delete this product?')) return;
+  try {
+    const res = await fetch(`/api/admin/products/${editingId}`, {
+      method: 'DELETE',
+      headers: authHeaders()
+    });
+    if (res.ok) {
+      await loadEverything();
+      closeProductModal();
+      toast('PRODUCT DELETED');
+    } else {
+      toast('Failed to delete product');
+    }
+  } catch (err) {
+    toast('Error deleting product');
+  }
+});
+
+async function loadOrders() {
+  const body = $('#orders-body');
+  body.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
+  try {
+    const res = await fetch('/api/admin/orders', { headers: authHeaders() });
+    if (res.status === 401) return showLogin();
+    const orders = await res.json();
+    
+    body.innerHTML = orders.map(o => `
+      <tr>
+        <td><strong>${esc(o.orderId)}</strong></td>
+        <td>${esc(o.customer?.first_name || 'N/A')} ${esc(o.customer?.last_name || '')}<br><small>${esc(o.customer?.email || '')}</small></td>
+        <td>${o.items.map(i => `${i.quantity}x ${esc(i.name)}`).join('<br>')}</td>
+        <td>${money(o.amount)}</td>
+        <td>
+          <select class="order-status-select" data-id="${o.orderId}" style="padding: 4px; border-radius: 4px; border: 1px solid #ccc;">
+            <option value="created" ${o.status === 'created' ? 'selected' : ''}>Created</option>
+            <option value="paid" ${o.status === 'paid' ? 'selected' : ''}>Paid</option>
+            <option value="shipped" ${o.status === 'shipped' ? 'selected' : ''}>Shipped</option>
+            <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+          </select>
+        </td>
+        <td>${new Date(o.createdAt).toLocaleDateString()}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="6">No orders found.</td></tr>';
+    
+    $$('.order-status-select').forEach(sel => {
+      sel.addEventListener('change', async (e) => {
+        const orderId = e.target.dataset.id;
+        const newStatus = e.target.value;
+        try {
+          const res = await fetch(`/api/admin/orders/${orderId}/status`, {
+            method: 'PUT',
+            headers: authHeaders(),
+            body: JSON.stringify({ status: newStatus })
+          });
+          if (res.ok) toast('ORDER STATUS UPDATED');
+          else toast('FAILED TO UPDATE STATUS');
+        } catch (err) {
+          toast('ERROR UPDATING STATUS');
+        }
+      });
+    });
+  } catch (err) {
+    body.innerHTML = '<tr><td colspan="6" style="color:red;">Error loading orders</td></tr>';
+  }
+}
+
+$('#refresh-orders').addEventListener('click', loadOrders);
+
+if (token) {
+  showDashboard();
+} else {
+  showLogin();
+}
+
+</script>
+</body></html>

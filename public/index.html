@@ -1,0 +1,304 @@
+<!doctype html>
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="#d9ef55" name="theme-color"/>
+<title>JMUNZ Merch Factory</title>
+<meta content="An immersive animated merch factory experience for jMunz13." name="description"/>
+
+<link href="styles.css" rel="stylesheet"/><link href="assets/favicon.svg" rel="icon" type="image/svg+xml"/></head>
+<body>
+<div aria-live="polite" class="preloader">
+<div class="preloader-grid"></div>
+<div class="preloader-mark">13</div>
+<p>STARTING THE FACTORY</p>
+<div class="load-track"><i></i></div>
+<strong class="load-percent">0%</strong>
+</div>
+<canvas aria-hidden="true" id="grain"></canvas>
+<div aria-hidden="true" class="pointer"></div>
+<header class="topbar">
+<a aria-label="JMUNZ Merch Factory home" class="factory-logo" href="#">
+<b>13</b>
+<span>JMUNZ<br/>MERCH FACTORY</span>
+</a>
+<div class="chapter-name">WELCOME</div>
+<div class="top-actions">
+<a aria-label="Open the official jMunz13 YouTube channel" class="youtube-header-link youtube-channel-link" href="https://www.youtube.com/@jmunz13" rel="noopener noreferrer" target="_blank">
+<img alt="" aria-hidden="true" class="yt-brand-logo" src="assets/jmunz-channel-logo.png"/>
+<span class="yt-header-copy"><small>OFFICIAL CHANNEL</small><b>YOUTUBE ↗</b></span>
+</a>
+<button aria-label="Toggle ambient sound" class="sound-toggle" type="button">
+<span class="sound-bars"><i></i><i></i><i></i><i></i></span>
+<em>SOUND OFF</em>
+</button>
+<button aria-label="View all merchandise" class="catalog-header-trigger" type="button">ALL MERCH</button>
+<button aria-label="Open cart" class="cart-trigger" type="button">CART <b>0</b></button>
+<button aria-label="Open menu" class="menu-trigger" type="button"><i></i><i></i></button>
+</div>
+</header>
+<main aria-label="JMUNZ merchandise factory experience" class="experience">
+<div class="stage-track">
+<!-- 00 / INTRO -->
+<section class="stage stage-intro active" data-accent="#d9ef55" data-title="WELCOME">
+<div class="factory-grid"></div>
+<div class="intro-copy">
+<span class="stage-kicker">WELCOME TO</span>
+<h1>THE JMUNZ<br/><i>MERCH FACTORY</i></h1>
+<p>Where every reaction, inside joke and community moment becomes something you can wear.</p>
+<button class="start-button magnetic" type="button">
+<span>START THE TOUR</span><b>→</b>
+</button>
+<a aria-label="Visit the official jMunz13 YouTube channel" class="youtube-hero-cta youtube-channel-link magnetic" href="https://www.youtube.com/@jmunz13" rel="noopener noreferrer" target="_blank">
+<span aria-hidden="true" class="yt-logo-badge"><img alt="" src="assets/jmunz-channel-logo.png"/></span>
+<span class="yt-hero-text"><small>CLICK THE JMUNZ LOGO</small><strong>WATCH @JMUNZ13</strong></span>
+<b>↗</b>
+</a>
+</div>
+<div aria-hidden="true" class="intro-machine">
+<div class="factory-arch arch-a"></div>
+<div class="factory-arch arch-b"></div>
+<div class="conveyor long-belt"><i></i><i></i><i></i><i></i><i></i></div>
+<div class="hero-garment">
+<div class="garment-shadow"></div>
+<div class="hoodie">
+<div class="hood"></div><div class="sleeve left"></div><div class="sleeve right"></div>
+<div class="torso"><div class="factory-print">13</div></div>
+</div>
+</div>
+<div class="warning-light"><i></i></div>
+<div class="factory-sign">UNIT 13</div>
+<a aria-label="Open the official jMunz13 YouTube channel" class="youtube-floating-card youtube-channel-link" href="https://www.youtube.com/@jmunz13" rel="noopener noreferrer" target="_blank">
+<img alt="jMunz13 official logo" class="yt-floating-logo" src="assets/jmunz-channel-logo.png"/>
+<span class="yt-floating-label"><i aria-hidden="true"></i><b>OPEN YOUTUBE</b><em>↗</em></span>
+</a>
+</div>
+<div class="scroll-help"><span>SCROLL OR DRAG</span><i>↘</i></div>
+</section>
+<!-- 01 / COLOR -->
+<section class="stage stage-color" data-accent="#ff6c3a" data-title="COLOR LAB">
+<div class="factory-grid"></div>
+<div class="stage-heading">
+<span>01 / COLOR LAB</span>
+<h2>CHOOSE<br/>YOUR ENERGY.</h2>
+<p>The tank stays blue like water, while you can change the shirt color clearly before it enters the print line.</p>
+</div>
+<div class="machine color-machine">
+<div class="machine-top"><span>JM-COLOR 13</span><i></i><i></i><i></i></div>
+<div class="machine-body">
+<div class="tank-window">
+<div class="liquid"></div>
+<div class="bubbles"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<div class="shirt shirt-color"><div class="shirt-logo">13</div></div>
+</div>
+<div class="tank-rim"></div>
+<div class="machine-panel">
+<b>COLOR MIX</b><span>ACTIVE</span>
+<div class="dial"></div>
+<div class="meter"><i></i></div>
+</div>
+</div>
+<div class="machine-feet"><i></i><i></i></div>
+</div>
+<div class="color-controls">
+<span>SELECT SHIRT COLOR</span>
+<div class="swatches">
+<button aria-label="Lime" class="swatch" data-color="#d9ef55" style="--swatch:#d9ef55"></button>
+<button aria-label="Orange" class="swatch" data-color="#ff6c3a" style="--swatch:#ff6c3a"></button>
+<button aria-label="Blue" class="swatch" data-color="#62c7df" style="--swatch:#62c7df"></button>
+<button aria-label="Coral" class="swatch" data-color="#ef746d" style="--swatch:#ef746d"></button>
+<button aria-label="Cream" class="swatch active" data-color="#f3efe3" style="--swatch:#f3efe3"></button>
+<button aria-label="Green" class="swatch" data-color="#173f31" style="--swatch:#173f31"></button>
+</div>
+<strong class="color-name">RAW CREAM</strong><small class="color-note">Blue water stays fixed so the shirt color is easier to see.</small>
+</div>
+</section>
+<!-- 02 / PRINT -->
+<section class="stage stage-print" data-accent="#62c7df" data-title="PRINT STATION">
+<div class="factory-grid"></div>
+<div class="stage-heading light">
+<span>02 / PRINT STATION</span>
+<h2>MAKE<br/>IT LOUD.</h2>
+<p>The artwork is pressed one clean layer at a time for a bold, durable finish.</p>
+</div>
+<div class="machine print-machine">
+<div class="press-head">
+<div class="press-rail"><i></i></div>
+<div class="press-block"><b>13</b><span>PRESS</span></div>
+<div class="press-arm"></div>
+</div>
+<div class="print-table">
+<div class="shirt flat-shirt"><div class="shirt-logo selected-print">BIG<br/>SHEHHT</div></div>
+<div class="screen-frame"></div>
+<div class="squeegee"></div>
+</div>
+<div class="base-console"><span>INK PRESSURE</span><div class="console-lights"><i></i><i></i><i></i></div><div class="console-screen">100%</div></div>
+</div>
+<div class="design-controls">
+<span>SELECT PRINT</span>
+<button class="design-chip active" data-print="BIG&lt;br&gt;SHEHHT">BIG SHEHHT</button>
+<button class="design-chip" data-print="13">SIGNATURE 13</button>
+<button class="design-chip" data-print="JMUNION">JMUNION</button>
+</div>
+</section>
+<!-- 03 / EMBROIDERY -->
+<section class="stage stage-stitch" data-accent="#ef746d" data-title="STITCH UNIT">
+<div class="factory-grid"></div>
+<div class="stage-heading">
+<span>03 / STITCH UNIT</span>
+<h2>BUILT<br/>THREAD BY THREAD.</h2>
+<p>Choose a reaction patch and watch the embroidery head lock it into the fabric.</p>
+</div>
+<div class="machine stitch-machine">
+<div class="stitch-column"><div class="thread-spools"><i></i><i></i><i></i><i></i></div></div>
+<div class="needle-head">
+<span>JM STITCH 04</span>
+<div class="needle-array"><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+<div class="needle"></div>
+<div class="stitch-bed">
+<div class="fabric-hoop"><div class="patch selected-patch">XD</div></div>
+<div class="stitch-lines"></div>
+</div>
+<div class="stitch-screen"><span>PATTERN</span><b class="pattern-code">R-01</b><i></i></div>
+</div>
+<div class="patch-controls">
+<span>SELECT REACTION</span>
+<button class="patch-chip active" data-code="R-01" data-patch="XD">XD</button>
+<button class="patch-chip" data-code="R-02" data-patch="ಠ_ಠ">ಠ_ಠ</button>
+<button class="patch-chip" data-code="R-03" data-patch=":P">:P</button>
+<button class="patch-chip" data-code="R-13" data-patch="13">13</button>
+</div>
+</section>
+<!-- 04 / PACK -->
+<section class="stage stage-pack" data-accent="#f3efe3" data-title="PACK &amp; SHIP">
+<div class="factory-grid"></div>
+<div class="stage-heading light">
+<span>04 / PACK &amp; SHIP</span>
+<h2>READY FOR<br/>THE JMUNION.</h2>
+<p>Final inspection, folded, packed and sent from the factory floor to your door.</p>
+</div>
+<div class="packing-line">
+<div class="scanner"><div class="scan-beam"></div><span>QUALITY<br/>CHECK</span></div>
+<div class="conveyor pack-belt"><i></i><i></i><i></i><i></i></div>
+<div class="package">
+<div class="box-back"></div>
+<div class="folded-shirt"><b>13</b></div>
+<div class="box-front"><span>JMUNZ<br/>FACTORY</span></div>
+<div class="box-flap flap-left"></div><div class="box-flap flap-right"></div>
+</div>
+<div class="stamp">APPROVED<br/><b>13</b></div>
+</div>
+<button class="pack-button magnetic" type="button"><span>PACK THE ORDER</span><b>↗</b></button>
+</section>
+<!-- 05 / SHOP -->
+<section class="stage stage-shop" data-accent="#173f31" data-title="FACTORY STORE">
+<div class="factory-grid"></div>
+<div class="shop-copy">
+<span>05 / FACTORY STORE</span>
+<h2>REAL DROP.<br/>READY TO SHOP.</h2>
+<p>I added your actual hoodies and embroidered shirts with matching prices so the store section feels closer to the real shop.</p>
+<div class="shop-arrows"><button aria-label="Previous product" class="product-prev">←</button><button aria-label="Next product" class="product-next">→</button></div>
+</div>
+<div class="product-carousel"></div>
+<button class="visit-store catalog-trigger" type="button">VIEW ALL MERCH <b>↗</b></button>
+</section>
+</div>
+</main>
+<section aria-hidden="true" aria-label="All merchandise" class="catalog-panel">
+<header class="catalog-topbar">
+<div class="catalog-brand"><b>13</b><span>JMUNZ<br/>ALL MERCH</span></div>
+<div class="catalog-top-actions">
+<button class="catalog-cart-trigger" type="button">CART <b class="catalog-cart-count">0</b></button>
+<button aria-label="Close all merchandise" class="catalog-close" type="button">×</button>
+</div>
+</header>
+<div class="catalog-hero">
+<div>
+<span>THE COMPLETE COLLECTION</span>
+<h2>SEE EVERY<br/>DROP AT ONCE.</h2>
+</div>
+<p>No more swiping one by one. Browse every hoodie and embroidered shirt in one clean catalog.</p>
+</div>
+<div class="catalog-toolbar">
+<div aria-label="Filter merchandise" class="catalog-filters" role="group">
+<button class="catalog-filter active" data-filter="all" type="button">ALL <span>07</span></button>
+<button class="catalog-filter" data-filter="hoodie" type="button">HOODIES <span>05</span></button>
+<button class="catalog-filter" data-filter="tee" type="button">T-SHIRTS <span>02</span></button>
+</div>
+<span class="catalog-result-count">SHOWING 7 PRODUCTS</span>
+</div>
+<div class="catalog-grid"></div>
+<footer class="catalog-footer">
+<div><strong>WANT TO COMPLETE YOUR PURCHASE?</strong><span>Continue to the official Fourthwall store for live sizes, colors, shipping, and checkout.</span></div>
+<a href="https://jmunz13-shop.fourthwall.com/" rel="noopener noreferrer" target="_blank">OPEN OFFICIAL STORE <b>↗</b></a>
+</footer>
+</section>
+<nav aria-label="Factory tour chapters" class="tour-nav">
+<button aria-label="Previous chapter" class="nav-prev">←</button>
+<div class="progress"><i></i></div>
+<span class="step-current">00</span><em>/</em><span>05</span>
+<button aria-label="Next chapter" class="nav-next">→</button>
+</nav>
+<aside aria-hidden="true" class="cart-panel">
+<header><span>FACTORY CART</span><button aria-label="Close cart" class="cart-close">×</button></header>
+<div class="cart-list"><div class="empty-cart"><b>13</b><p>THE LINE IS EMPTY.</p></div></div>
+<footer><div><span>SUBTOTAL</span><strong class="cart-total">$0.00</strong></div><button class="checkout-trigger" type="button">SECURE CHECKOUT ↗</button><small>Payments open securely through PayHere. Shipping is collected during checkout.</small></footer>
+</aside>
+<div class="overlay"></div>
+<section aria-hidden="true" aria-label="Secure checkout" class="checkout-panel">
+<div class="checkout-shell">
+<header class="checkout-head">
+<span>SECURE PAYHERE CHECKOUT</span>
+<button aria-label="Close checkout" class="checkout-close" type="button">×</button>
+</header>
+<div class="checkout-layout">
+<form class="checkout-form" id="checkout-form">
+<label>FIRST NAME<input autocomplete="given-name" name="first_name" required=""/></label>
+<label>LAST NAME<input autocomplete="family-name" name="last_name" required=""/></label>
+<label class="full">EMAIL<input autocomplete="email" name="email" required="" type="email"/></label>
+<label>PHONE<input autocomplete="tel" name="phone" required=""/></label>
+<label>CITY<input autocomplete="address-level2" name="city" required=""/></label>
+<label class="full">DELIVERY ADDRESS<input autocomplete="street-address" name="address" required=""/></label>
+<label class="full">COUNTRY
+            <select name="country" required="">
+<option selected="" value="Sri Lanka">Sri Lanka</option>
+<option value="United States">United States</option>
+<option value="United Kingdom">United Kingdom</option>
+<option value="Canada">Canada</option>
+<option value="Australia">Australia</option>
+<option value="Other">Other</option>
+</select>
+</label>
+<div class="payment-state" role="status"></div>
+<div id="paypal-button-container"></div>
+<p class="checkout-security">Your card details are processed securely by PayPal. This website does not receive or store card numbers.</p>
+</form>
+<aside class="checkout-summary">
+<h3>ORDER SUMMARY</h3>
+<div class="checkout-items"></div>
+<div class="checkout-total"><span>TOTAL</span><strong>$0.00</strong></div>
+</aside>
+</div>
+</div>
+</section>
+<aside aria-hidden="true" class="menu-panel">
+<button aria-label="Close menu" class="menu-close">×</button>
+<nav>
+<button data-stage="0"><small>00</small> WELCOME</button>
+<button data-stage="1"><small>01</small> COLOR LAB</button>
+<button data-stage="2"><small>02</small> PRINT STATION</button>
+<button data-stage="3"><small>03</small> STITCH UNIT</button>
+<button data-stage="4"><small>04</small> PACK &amp; SHIP</button>
+<button data-stage="5"><small>05</small> FACTORY STORE</button>
+<button class="menu-catalog-trigger" type="button"><small>06</small> ALL MERCH</button>
+<a class="menu-youtube-link youtube-channel-link" href="https://www.youtube.com/@jmunz13" rel="noopener noreferrer" target="_blank"><small>▶</small> WATCH @JMUNZ13</a>
+</nav>
+</aside>
+<div class="toast" role="status">ADDED TO FACTORY CART</div>
+
+<script src="script.js"></script></body>
+</html>
