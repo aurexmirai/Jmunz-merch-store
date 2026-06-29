@@ -224,10 +224,8 @@
 <p>No more swiping one by one. Browse every hoodie and embroidered shirt in one clean catalog.</p>
 </div>
 <div class="catalog-toolbar">
-<div aria-label="Filter merchandise" class="catalog-filters" role="group">
-<button class="catalog-filter active" data-filter="all" type="button">ALL <span>07</span></button>
-<button class="catalog-filter" data-filter="hoodie" type="button">HOODIES <span>05</span></button>
-<button class="catalog-filter" data-filter="tee" type="button">T-SHIRTS <span>02</span></button>
+<div aria-label="Filter merchandise" class="catalog-filters" id="dynamic-filters" role="group">
+<!-- Dynamic filters will be injected here -->
 </div>
 <span class="catalog-result-count">SHOWING 7 PRODUCTS</span>
 </div>
@@ -246,46 +244,218 @@
 <aside aria-hidden="true" class="cart-panel">
 <header><span>FACTORY CART</span><button aria-label="Close cart" class="cart-close">×</button></header>
 <div class="cart-list"><div class="empty-cart"><b>13</b><p>THE LINE IS EMPTY.</p></div></div>
-<footer><div><span>SUBTOTAL</span><strong class="cart-total">$0.00</strong></div><button class="checkout-trigger" type="button">SECURE CHECKOUT ↗</button><small>Payments open securely through PayHere. Shipping is collected during checkout.</small></footer>
+<footer><div><span>SUBTOTAL</span><strong class="cart-total">$0.00</strong></div><button class="checkout-trigger" type="button">SECURE CHECKOUT ↗</button><small>Payments processed securely via Stripe or PayPal.</small></footer>
 </aside>
+
+<section aria-hidden="true" class="product-page-panel" id="product-page">
+  <header class="product-page-header">
+    <button class="product-page-back" type="button" aria-label="Back to Shop">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      BACK TO SHOP
+    </button>
+    <a class="product-page-logo" href="#">
+      <b>13</b>
+      <span>JMUNZ<br/>MERCH FACTORY</span>
+    </a>
+    <div class="product-page-actions">
+      <button class="cart-trigger product-page-cart-trigger" type="button">CART <b>0</b></button>
+    </div>
+  </header>
+
+  <div class="product-page-layout">
+    <!-- Left Column: Large Image Gallery -->
+    <div class="product-page-gallery">
+      <div class="pp-image-wrap">
+        <span class="pp-decor-plus top-left">+</span>
+        <span class="pp-decor-plus top-right">+</span>
+        <span class="pp-decor-plus bottom-left">+</span>
+        <span class="pp-decor-plus bottom-right">+</span>
+        <span class="pp-decor-badge">OFFICIAL JMUNZ13 MERCH</span>
+        <img id="pp-product-img" src="" alt="Product Preview">
+      </div>
+    </div>
+
+    <!-- Right Column: Product Config & Details -->
+    <div class="product-page-info">
+      <div class="pp-header">
+        <span class="pp-category"><i class="pp-badge-dot"></i><span id="pp-product-category">HOODIE</span></span>
+        <h1 id="pp-product-name">Product Name</h1>
+        <strong id="pp-product-price" class="pp-price">$0.00</strong>
+      </div>
+      
+      <div class="pp-section">
+        <label id="pp-color-label" class="pp-label">COLOR: WHITE</label>
+        <div class="pp-swatches" id="pp-swatches-grid"></div>
+        <select id="pp-color-select" style="display: none;"></select>
+      </div>
+
+      <div class="pp-section">
+        <label class="pp-label">SIZE</label>
+        <div class="pp-size-grid" id="pp-size-grid">
+          <label><input type="radio" name="pp_size" value="S" checked><span>S</span></label>
+          <label><input type="radio" name="pp_size" value="M"><span>M</span></label>
+          <label><input type="radio" name="pp_size" value="L"><span>L</span></label>
+          <label><input type="radio" name="pp_size" value="XL"><span>XL</span></label>
+          <label><input type="radio" name="pp_size" value="2XL" data-price-add="2.00"><span>2XL (+$2)</span></label>
+          <label><input type="radio" name="pp_size" value="3XL" data-price-add="4.00"><span>3XL (+$4)</span></label>
+          <label><input type="radio" name="pp_size" value="4XL" data-price-add="6.00"><span>4XL (+$6)</span></label>
+        </div>
+      </div>
+
+      <div class="pp-section">
+        <label class="pp-label">QUANTITY</label>
+        <div class="pp-qty-control">
+          <button type="button" id="pp-qty-minus">-</button>
+          <input type="number" id="pp-qty-input" value="1" min="1" max="99" readonly>
+          <button type="button" id="pp-qty-plus">+</button>
+        </div>
+      </div>
+
+      <div class="pp-actions-footer">
+        <button type="button" id="pp-confirm-btn" class="pp-btn-add">ADD TO CART</button>
+        <button type="button" id="pp-buy-now-btn" class="pp-btn-buy">BUY IT NOW - <span id="pp-total-price"></span></button>
+      </div>
+
+      <div class="pp-accordions">
+        <details class="pp-accordion" open>
+          <summary>DESCRIPTION</summary>
+          <div class="pp-accordion-content" id="pp-desc-content">
+            Loading details...
+          </div>
+        </details>
+        <details class="pp-accordion">
+          <summary>SHIPPING & RETURNS</summary>
+          <div class="pp-accordion-content">
+            <p>Products are custom-made to order. Delivery typically takes 5-10 business days. Shipping rates calculated at checkout. Worldwide shipping is available. Returns are accepted within 30 days for damaged or defective items.</p>
+          </div>
+        </details>
+        <details class="pp-accordion">
+          <summary>SIZE CHART</summary>
+          <div class="pp-accordion-content" id="pp-size-chart-content">
+            Loading sizes...
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+</section>
 <div class="overlay"></div>
 <section aria-hidden="true" aria-label="Secure checkout" class="checkout-panel">
 <div class="checkout-shell">
 <header class="checkout-head">
-<span>SECURE PAYHERE CHECKOUT</span>
+<span>SECURE CHECKOUT</span>
 <button aria-label="Close checkout" class="checkout-close" type="button">×</button>
 </header>
-<div class="checkout-layout">
-<form class="checkout-form" id="checkout-form">
+<form class="checkout-layout" id="checkout-form">
+<div class="checkout-shipping">
+<h3>SHIPPING DETAILS</h3>
+<div class="shipping-grid">
 <label>FIRST NAME<input autocomplete="given-name" name="first_name" required=""/></label>
 <label>LAST NAME<input autocomplete="family-name" name="last_name" required=""/></label>
 <label class="full">EMAIL<input autocomplete="email" name="email" required="" type="email"/></label>
-<label>PHONE<input autocomplete="tel" name="phone" required=""/></label>
-<label>CITY<input autocomplete="address-level2" name="city" required=""/></label>
+<label class="full">PHONE<input autocomplete="tel" name="phone" required=""/></label>
 <label class="full">DELIVERY ADDRESS<input autocomplete="street-address" name="address" required=""/></label>
-<label class="full">COUNTRY
+<label>CITY<input autocomplete="address-level2" name="city" required=""/></label>
+<label>STATE / PROVINCE<input autocomplete="address-level1" name="state" required=""/></label>
+<label>ZIP / POSTAL CODE<input autocomplete="postal-code" name="zip" required=""/></label>
+<label>COUNTRY
             <select name="country" required="">
-<option selected="" value="Sri Lanka">Sri Lanka</option>
-<option value="United States">United States</option>
+<option selected="" value="United States">United States</option>
+<option value="Sri Lanka">Sri Lanka</option>
 <option value="United Kingdom">United Kingdom</option>
 <option value="Canada">Canada</option>
 <option value="Australia">Australia</option>
 <option value="Other">Other</option>
 </select>
 </label>
-<div class="payment-state" role="status"></div>
-<div id="paypal-button-container"></div>
-<p class="checkout-security">Your card details are processed securely by PayPal. This website does not receive or store card numbers.</p>
-</form>
+</div>
+</div>
+
+<div class="checkout-payment-summary">
 <aside class="checkout-summary">
 <h3>ORDER SUMMARY</h3>
 <div class="checkout-items"></div>
 <div class="checkout-total"><span>TOTAL</span><strong>$0.00</strong></div>
 </aside>
+
+<div class="payment-state" role="status"></div>
+
+<div class="payment-methods-selector">
+  <button type="button" class="payment-method-btn active" data-target="paypal-payment-section">PAYPAL / DEBIT CARD</button>
+  <button type="button" class="payment-method-btn" data-target="stripe-payment-section">CREDIT CARD / APPLE / GOOGLE PAY</button>
 </div>
+
+<div id="paypal-payment-section" class="payment-section active">
+  <!-- Custom Card Fields Form -->
+  <div id="paypal-card-form" class="paypal-card-form">
+    <div class="card-field-row">
+      <label>CARD NUMBER</label>
+      <div id="card-number-container" class="card-field-container"></div>
+    </div>
+    <div class="card-field-row split">
+      <div class="card-field-col">
+        <label>EXPIRY DATE</label>
+        <div id="card-expiry-container" class="card-field-container"></div>
+      </div>
+      <div class="card-field-col">
+        <label>SECURITY CODE (CVV)</label>
+        <div id="card-cvv-container" class="card-field-container"></div>
+      </div>
+    </div>
+    <button id="paypal-card-submit-btn" type="button" class="paypal-card-submit-button">PAY WITH CARD</button>
+  </div>
+
+  <div class="payment-divider"><span>OR PAY WITH PAYPAL ACCOUNT</span></div>
+
+  <div id="paypal-button-container"></div>
+  <p class="checkout-security">You will be redirected to PayPal to complete your purchase securely.</p>
+</div>
+
+<div id="stripe-payment-section" class="payment-section">
+  <button id="stripe-submit-btn" type="button" class="stripe-submit-button">PAY WITH STRIPE (CARDS / APPLE / GOOGLE PAY)</button>
+  <p class="checkout-security">You will be redirected to Stripe to complete your purchase securely.</p>
+</div>
+</div>
+</form>
 </div>
 </section>
-<aside aria-hidden="true" class="menu-panel">
+
+<section id="product-modal" aria-hidden="true" class="product-modal-panel">
+  <div class="product-modal-shell">
+    <button class="pm-close" type="button">×</button>
+    <div class="pm-layout">
+      <div class="pm-image-wrap">
+        <img id="pm-image" src="" alt="Product">
+      </div>
+      <div class="pm-details">
+        <h2 id="pm-title">PRODUCT NAME</h2>
+        <strong id="pm-price">$0.00</strong>
+        
+        <div class="pm-option-group">
+          <span>SIZE</span>
+          <div class="pm-size-grid" id="pm-sizes"></div>
+        </div>
+
+        <div class="pm-option-group">
+          <span>COLOR</span>
+          <div class="pm-color-grid" id="pm-colors"></div>
+        </div>
+
+        <div class="pm-option-group">
+          <span>QUANTITY</span>
+          <div class="pm-qty-control">
+            <button type="button" id="pm-qty-minus">-</button>
+            <span id="pm-qty-val">1</span>
+            <button type="button" id="pm-qty-plus">+</button>
+          </div>
+        </div>
+
+        <button type="button" id="pm-add-btn" class="pm-add-btn">CONFIRM ADD TO CART <b>＋</b></button>
+      </div>
+    </div>
+  </div>
+</section>
+\n<aside aria-hidden="true" class="menu-panel">
 <button aria-label="Close menu" class="menu-close">×</button>
 <nav>
 <button data-stage="0"><small>00</small> WELCOME</button>

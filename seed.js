@@ -14,7 +14,9 @@ const productSchema = new mongoose.Schema({
   active: { type: Boolean, default: true },
   featured: { type: Boolean, default: true },
   soldOut: { type: Boolean, default: false },
-  image: { type: String }
+  image: { type: String },
+  sizes: { type: [String], default: ['S', 'M', 'L', 'XL', '2XL'] },
+  colors: { type: [{ name: String, hex: String, image: String }], default: [] }
 });
 
 const settingSchema = new mongoose.Schema({
@@ -26,7 +28,11 @@ const settingSchema = new mongoose.Schema({
   shopDescription: String,
   currency: String,
   youtubeUrl: String,
-  officialStoreUrl: String
+  officialStoreUrl: String,
+  bgSoundUrl: String,
+  soundEnabled: { type: Boolean, default: true },
+  adminPassword: String,
+  productCategories: String
 });
 
 const Product = mongoose.model('Product', productSchema);

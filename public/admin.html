@@ -27,6 +27,7 @@
         <button class="nav-item active" data-view="products"><span>01</span> Products</button>
         <button class="nav-item" data-view="settings"><span>02</span> Site Settings</button>
         <button class="nav-item" data-view="orders"><span>03</span> Orders</button>
+        <button class="nav-item" data-view="security"><span>04</span> Security</button>
       </nav>
       <div class="sidebar-bottom"><a href="/" target="_blank">OPEN STORE ↗</a><button id="logout-button">LOG OUT</button></div>
     </aside>
@@ -37,6 +38,16 @@
         <div class="view-actions"><div><h3>Merch inventory</h3><p>Add a new shirt, change prices, replace images, mark sold out, or hide products.</p></div><button class="primary" id="add-product-button">＋ ADD NEW PRODUCT</button></div>
         <div class="stats-row"><article><span>TOTAL PRODUCTS</span><b id="stat-total">0</b></article><article><span>LIVE PRODUCTS</span><b id="stat-live">0</b></article><article><span>SOLD OUT</span><b id="stat-sold">0</b></article><article><span>FEATURED</span><b id="stat-featured">0</b></article></div>
         <div class="product-admin-grid" id="product-admin-grid"></div>
+        <div class="view-actions" style="margin-top: 50px; border-top: 1px solid var(--line); padding-top: 30px;">
+          <div><h3>Product Categories</h3><p>Manage the categories used for filtering products on the main site.</p></div>
+          <button class="secondary" id="add-category-button">＋ ADD CATEGORY</button>
+        </div>
+        <div class="orders-table-wrap">
+          <table>
+            <thead><tr><th>CATEGORY NAME</th><th style="width:140px;text-align:right">ACTIONS</th></tr></thead>
+            <tbody id="categories-body"></tbody>
+          </table>
+        </div>
       </section>
 
       <section class="admin-view" id="view-settings">
@@ -50,7 +61,21 @@
           <label class="wide">Shop description<textarea name="shopDescription" rows="3"></textarea></label>
           <label>YouTube channel URL<input name="youtubeUrl" type="url"></label>
           <label>Official store URL<input name="officialStoreUrl" type="url"></label>
+          <label class="wide" style="display:flex;align-items:center;gap:10px;"><input type="checkbox" name="soundEnabled" style="width:auto;margin:0;"> Enable Background Sound (Shows the sound button on main site)</label>
+          <label class="wide">Background Sound File (MP3) <small>Upload a small .mp3 file (max 3MB). This will play when the sound toggle is active.</small>
+            <input type="file" id="bgSoundFile" accept=".mp3,audio/mpeg">
+            <input type="hidden" name="bgSoundUrl" id="bgSoundUrl">
+          </label>
           <div class="wide form-actions"><button class="primary" type="submit">SAVE WEBSITE SETTINGS</button><span id="settings-state"></span></div>
+        </form>
+      </section>
+
+      <section class="admin-view" id="view-security">
+        <div class="view-actions"><div><h3>Security settings</h3><p>Change your admin dashboard password.</p></div></div>
+        <form class="settings-form" id="security-form">
+          <label class="wide">New Admin Password <small>Must be at least 4 characters.</small><input type="password" id="newPassword" name="adminPassword" minlength="4" required></label>
+          <label class="wide">Confirm New Password <small>Re-type the new password to confirm.</small><input type="password" id="confirmPassword" minlength="4" required></label>
+          <div class="wide form-actions"><button class="primary" type="submit">UPDATE PASSWORD</button><span id="security-state"></span></div>
         </form>
       </section>
 
@@ -73,11 +98,19 @@
         </div>
         <div class="fields-column">
           <label>Product name<input name="name" required maxlength="100"></label>
-          <div class="two-col"><label>Price<input name="price" type="number" min="0" step="0.01" required></label><label>Category<select name="category"><option value="hoodie">Hoodie</option><option value="tee">T-Shirt</option><option value="accessory">Accessory</option></select></label></div>
+          <div class="two-col"><label>Price<input name="price" type="number" min="0" step="0.01" required></label><label>Category<select name="category" id="product-category-select"><option value="hoodie">Hoodie</option><option value="tee">T-Shirt</option><option value="accessory">Accessory</option></select></label></div>
           <label>Description<textarea name="description" rows="3" maxlength="240"></textarea></label>
           <label>Product checkout URL<input name="productUrl" type="url" placeholder="https://..."></label>
           <label>Display order<input name="order" type="number" min="0" step="1" value="1"></label>
           <div class="toggle-row"><label><input name="active" type="checkbox" checked><span></span>Visible on website</label><label><input name="featured" type="checkbox" checked><span></span>Featured in swipe section</label><label><input name="soldOut" type="checkbox"><span></span>Sold out</label></div>
+          <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--line);">
+          <div class="color-variants-section">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <h4 style="font-size:12px;letter-spacing:0.05em;color:var(--ink);">COLOR VARIANTS (OPTIONAL)</h4>
+              <button type="button" class="reset-demo" id="add-variant-btn" style="font-size:12px;color:var(--ink);border:1px solid var(--ink);padding:4px 8px;border-radius:4px;">+ ADD COLOR</button>
+            </div>
+            <div id="variants-container"></div>
+          </div>
         </div>
       </div>
       <footer><button type="button" class="danger hidden" id="delete-product">DELETE PRODUCT</button><div><button type="button" class="secondary close-modal">CANCEL</button><button type="submit" class="primary">SAVE PRODUCT</button></div></footer>
@@ -215,13 +248,41 @@ function renderProducts() {
 function renderSettings() {
   const f = $('#settings-form');
   Object.entries(settings).forEach(([k, v]) => {
-    if (f.elements[k]) f.elements[k].value = v ?? '';
+    if (f.elements[k]) {
+      if (f.elements[k].type === 'checkbox') f.elements[k].checked = v !== false;
+      else f.elements[k].value = v ?? '';
+    }
   });
+  
+  const catSelect = $('#product-category-select');
+  if (catSelect) {
+    const catsStr = settings.productCategories || 'Hoodie, Tee, Accessory';
+    const cats = catsStr.split(',').map(s => s.trim()).filter(Boolean);
+    catSelect.innerHTML = cats.map(c => `<option value="${c.toLowerCase().replace(/\s+/g, '-')}">${c}</option>`).join('');
+  }
+  if (typeof renderCategories === 'function') renderCategories();
 }
+
+$('#bgSoundFile')?.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 3 * 1024 * 1024) {
+    alert('File is too large! Please select an MP3 under 3MB.');
+    e.target.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    $('#bgSoundUrl').value = ev.target.result;
+    $('#settings-state').textContent = 'Audio loaded, ready to save.';
+  };
+  reader.readAsDataURL(file);
+});
 
 $('#settings-form').addEventListener('submit', async e => {
   e.preventDefault();
   const formData = Object.fromEntries(new FormData(e.currentTarget).entries());
+  formData.soundEnabled = e.currentTarget.elements.soundEnabled.checked;
   try {
     const res = await fetch('/api/admin/settings', {
       method: 'PUT',
@@ -237,6 +298,35 @@ $('#settings-form').addEventListener('submit', async e => {
     }
   } catch (err) {
     toast('Error saving settings');
+  }
+});
+
+$('#security-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const newPassword = $('#newPassword').value;
+  const confirmPassword = $('#confirmPassword').value;
+  
+  if (newPassword !== confirmPassword) {
+    toast('Passwords do not match');
+    $('#security-state').textContent = 'Error';
+    return;
+  }
+  
+  try {
+    const res = await fetch('/api/admin/settings', {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify({ adminPassword: newPassword })
+    });
+    if (res.ok) {
+      $('#security-state').textContent = 'Saved ✓';
+      toast('ADMIN PASSWORD UPDATED');
+      e.target.reset();
+    } else {
+      toast('Failed to update password');
+    }
+  } catch (err) {
+    toast('Error updating password');
   }
 });
 
@@ -263,10 +353,13 @@ function openProductModal(id = null) {
     form.elements.soldOut.checked = !!p.soldOut;
     preview.innerHTML = `<img src="${esc(p.image)}" alt="">`;
     pendingImage = p.image;
+    window.currentVariants = p.colors ? JSON.parse(JSON.stringify(p.colors)) : [];
   } else {
     preview.innerHTML = '<span>UPLOAD<br>PRODUCT IMAGE</span>';
     pendingImage = '';
+    window.currentVariants = [];
   }
+  if (typeof renderVariantRows === 'function') renderVariantRows();
   modal.classList.remove('hidden');
 }
 
@@ -307,7 +400,8 @@ form.addEventListener('submit', async e => {
     active: form.elements.active.checked,
     featured: form.elements.featured.checked,
     soldOut: form.elements.soldOut.checked,
-    image: pendingImage || ''
+    image: pendingImage || '',
+    colors: (window.currentVariants || []).filter(v => v.name.trim() !== '')
   };
 
   try {
@@ -396,6 +490,149 @@ async function loadOrders() {
 }
 
 $('#refresh-orders').addEventListener('click', loadOrders);
+
+function renderCategories() {
+  const tbody = $('#categories-body');
+  const catsStr = settings.productCategories || 'Hoodie, Tee, Accessory';
+  const cats = catsStr.split(',').map(s => s.trim()).filter(Boolean);
+  
+  tbody.innerHTML = cats.map((c, i) => `
+    <tr>
+      <td style="font-weight:bold; letter-spacing:0.05em">${esc(c)}</td>
+      <td style="text-align:right">
+        <button type="button" class="reset-demo" onclick="editCategory(${i})" style="color:var(--ink);border-color:var(--ink)">EDIT</button>
+        <button type="button" class="reset-demo" style="color:#ff3b30;border-color:rgba(255,59,48,0.3)" onclick="deleteCategory(${i})">DEL</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="2">No categories found.</td></tr>';
+}
+
+window.editCategory = async function(index) {
+  const catsStr = settings.productCategories || 'Hoodie, Tee, Accessory';
+  const cats = catsStr.split(',').map(s => s.trim()).filter(Boolean);
+  const newName = prompt('Edit Category:', cats[index]);
+  if (newName !== null && newName.trim() !== '') {
+    cats[index] = newName.trim();
+    await saveCategories(cats);
+  }
+};
+
+window.deleteCategory = async function(index) {
+  const catsStr = settings.productCategories || 'Hoodie, Tee, Accessory';
+  const cats = catsStr.split(',').map(s => s.trim()).filter(Boolean);
+  if (confirm('Delete category "' + cats[index] + '"?')) {
+    cats.splice(index, 1);
+    await saveCategories(cats);
+  }
+};
+
+$('#add-category-button')?.addEventListener('click', async () => {
+  const catsStr = settings.productCategories || 'Hoodie, Tee, Accessory';
+  const cats = catsStr.split(',').map(s => s.trim()).filter(Boolean);
+  const newName = prompt('Enter new category name:');
+  if (newName !== null && newName.trim() !== '') {
+    cats.push(newName.trim());
+    await saveCategories(cats);
+  }
+});
+
+async function saveCategories(catsArray) {
+  const catsStr = catsArray.join(', ');
+  try {
+    const res = await fetch('/api/admin/settings', {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify({ productCategories: catsStr })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      settings.productCategories = data.productCategories || catsStr;
+      toast('CATEGORIES UPDATED');
+      renderCategories();
+      const catSelect = $('#product-category-select');
+      if (catSelect) {
+        catSelect.innerHTML = catsArray.map(c => `<option value="${c.toLowerCase().replace(/\\s+/g, '-')}">${c}</option>`).join('');
+      }
+    } else {
+      toast('Failed to save categories');
+    }
+  } catch (err) { toast('Error saving categories'); }
+}
+
+window.currentVariants = [];
+function renderVariantRows() {
+  const c = $('#variants-container');
+  if (!c) return;
+  c.innerHTML = '';
+  window.currentVariants.forEach((v, i) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:10px;margin-bottom:10px;align-items:center;';
+    
+    const nameIn = document.createElement('input');
+    nameIn.type = 'text';
+    nameIn.placeholder = 'Name (e.g. Red)';
+    nameIn.value = v.name || '';
+    nameIn.style.cssText = 'flex:1;min-width:0;padding:6px;border:1px solid var(--line);border-radius:4px;';
+    nameIn.oninput = (e) => v.name = e.target.value;
+    
+    const hexIn = document.createElement('input');
+    hexIn.type = 'color';
+    hexIn.value = v.hex || '#000000';
+    hexIn.style.cssText = 'width:34px;height:34px;padding:0;border:none;cursor:pointer;';
+    hexIn.oninput = (e) => v.hex = e.target.value;
+    
+    const imgWrap = document.createElement('div');
+    imgWrap.style.cssText = 'position:relative;width:34px;height:34px;background:#eee;border:1px solid #ccc;border-radius:4px;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+    
+    const fileIn = document.createElement('input');
+    fileIn.type = 'file';
+    fileIn.accept = 'image/*';
+    fileIn.style.cssText = 'position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;left:0;top:0;';
+    
+    const imgPreview = document.createElement('img');
+    imgPreview.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+    if (v.image) imgPreview.src = v.image;
+    else imgPreview.style.display = 'none';
+    
+    const txt = document.createElement('span');
+    txt.textContent = 'IMG';
+    txt.style.cssText = 'font-size:10px;pointer-events:none;color:#999;';
+    if (v.image) txt.style.display = 'none';
+    
+    fileIn.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        v.image = reader.result;
+        imgPreview.src = reader.result;
+        imgPreview.style.display = 'block';
+        txt.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    };
+    
+    imgWrap.append(fileIn, imgPreview, txt);
+    
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'reset-demo';
+    delBtn.textContent = '×';
+    delBtn.style.cssText = 'color:red;font-size:20px;padding:0 5px;';
+    delBtn.onclick = () => {
+      window.currentVariants.splice(i, 1);
+      renderVariantRows();
+    };
+    
+    row.append(nameIn, hexIn, imgWrap, delBtn);
+    c.appendChild(row);
+  });
+}
+
+$('#add-variant-btn')?.addEventListener('click', () => {
+  window.currentVariants.push({ name: '', hex: '#000000', image: '' });
+  renderVariantRows();
+});
 
 if (token) {
   showDashboard();

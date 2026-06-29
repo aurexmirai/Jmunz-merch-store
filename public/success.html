@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <meta content="#d9ef55" name="theme-color"/>
+  <title>Order Confirmed | JMUNZ Merch Factory</title>
+  <link href="styles.css" rel="stylesheet"/>
+  <link href="assets/favicon.svg" rel="icon" type="image/svg+xml"/>
+  <style>
+    body {
+      overflow-y: auto !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      background: var(--cream);
+      padding: 120px 20px 40px;
+    }
+    .success-container {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 600px;
+      background: #ffffff;
+      border: 2px solid var(--ink);
+      border-radius: 16px;
+      padding: 40px 30px;
+      box-shadow: 0 20px 0 rgba(16, 20, 18, 0.08);
+      margin-top: 20px;
+      text-align: center;
+    }
+    .success-icon {
+      font: 700 4.5rem var(--display);
+      color: var(--acid);
+      background: var(--ink);
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 24px;
+      transform: rotate(-6deg);
+    }
+    .success-container h1 {
+      font: 600 clamp(2rem, 5vw, 3rem)/0.9 var(--display);
+      letter-spacing: -0.04em;
+      margin: 0 0 12px;
+      text-transform: uppercase;
+    }
+    .success-container p.subtitle {
+      font-size: 0.9rem;
+      color: rgba(16, 20, 18, 0.7);
+      margin: 0 0 32px;
+      line-height: 1.5;
+    }
+    .order-card {
+      border-top: 1px dashed var(--line);
+      border-bottom: 1px dashed var(--line);
+      padding: 24px 0;
+      margin-bottom: 30px;
+      text-align: left;
+    }
+    .order-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 0.85rem;
+    }
+    .order-row.total {
+      font: 600 1.25rem var(--display);
+      margin-top: 15px;
+      border-top: 1px solid var(--line);
+      padding-top: 15px;
+    }
+    .order-details-section {
+      text-align: left;
+      margin-bottom: 30px;
+    }
+    .order-details-section h3 {
+      font: 600 0.75rem var(--ui);
+      letter-spacing: 0.12em;
+      margin-bottom: 12px;
+      opacity: 0.5;
+      text-transform: uppercase;
+    }
+    .address-box {
+      font-size: 0.85rem;
+      line-height: 1.5;
+      background: rgba(16, 20, 18, 0.03);
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+    }
+    .action-btn {
+      height: 54px;
+      width: 100%;
+      border: 1px solid var(--ink);
+      border-radius: 999px;
+      background: var(--green);
+      color: var(--cream);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: transform 0.2s;
+    }
+    .action-btn:hover {
+      transform: translateY(-2px);
+      background: var(--ink);
+    }
+    .loader-box {
+      padding: 60px 0;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+    }
+    .loader-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(16, 20, 18, 0.1);
+      border-top-color: var(--ink);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    .error-box {
+      color: var(--coral);
+      padding: 40px 0;
+    }
+    .error-box p {
+      margin-bottom: 24px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <canvas aria-hidden="true" id="grain"></canvas>
+
+  <header class="topbar" style="mix-blend-mode: normal;">
+    <a aria-label="JMUNZ Merch Factory home" class="factory-logo" href="/">
+      <b>13</b>
+      <span>JMUNZ<br/>MERCH FACTORY</span>
+    </a>
+  </header>
+
+  <main class="success-container">
+    <!-- Loader Section -->
+    <div id="loading-section" class="loader-box">
+      <div class="loader-spinner"></div>
+      <p>PROCESSING YOUR SECURE PAYMENT...</p>
+    </div>
+
+    <!-- Error Section -->
+    <div id="error-section" class="error-box" style="display: none;">
+      <p id="error-msg">We couldn't confirm your payment status.</p>
+      <a class="action-btn" href="/">GO BACK TO STORE</a>
+    </div>
+
+    <!-- Success Content Section -->
+    <div id="success-content" style="display: none;">
+      <div class="success-icon">13</div>
+      <h1>ORDER CONFIRMED</h1>
+      <p class="subtitle">Thank you for supporting jMunz13! Your order has been placed.</p>
+      
+      <div class="order-card">
+        <div id="order-items-list"></div>
+        <div class="order-row total">
+          <span>TOTAL PAID</span>
+          <span id="order-total-price">$0.00</span>
+        </div>
+      </div>
+
+      <div class="order-details-section">
+        <h3>Shipping Address</h3>
+        <div class="address-box" id="shipping-address-box"></div>
+      </div>
+
+      <div style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 25px;">
+        Order reference: <span id="order-ref-id" style="font-family: monospace;"></span>
+      </div>
+
+      <a class="action-btn" href="/">CONTINUE SHOPPING &rarr;</a>
+    </div>
+  </main>
+
+  <script>
+    // Grain effect
+    const canvas = document.getElementById('grain');
+    const ctx = canvas.getContext('2d');
+    function grain() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      const img = ctx.createImageData(canvas.width, canvas.height);
+      for (let i = 0; i < img.data.length; i += 4) {
+        const v = Math.random() * 255;
+        img.data[i] = img.data[i+1] = img.data[i+2] = v;
+        img.data[i+3] = 20; // grain opacity
+      }
+      ctx.putImageData(img, 0, 0);
+    }
+    grain();
+    window.addEventListener('resize', grain);
+
+    // Retrieve query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const paypalToken = urlParams.get('token');
+    const stripeSessionId = urlParams.get('session_id');
+
+    async function confirmPayment() {
+      let res;
+      try {
+        if (paypalToken) {
+          res = await fetch('/api/paypal/capture-order', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ paypalOrderId: paypalToken })
+          });
+        } else if (stripeSessionId) {
+          res = await fetch(`/api/stripe/checkout-success?session_id=${stripeSessionId}`);
+        } else {
+          document.getElementById('loading-section').style.display = 'none';
+          document.getElementById('error-section').style.display = 'block';
+          document.getElementById('error-msg').textContent = 'No valid transaction token found in the URL.';
+          return;
+        }
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to verify transaction.');
+
+        // Render details
+        const order = data.order;
+        document.getElementById('order-ref-id').textContent = order.orderId;
+        document.getElementById('order-total-price').textContent = `$${Number(order.amount).toFixed(2)}`;
+
+        const itemsHtml = order.items.map(item => `
+          <div class="order-row">
+            <span>${item.quantity}x ${item.name} <small style="opacity:0.6;">(${item.size} / ${item.color})</small></span>
+            <strong>$${(item.unitPrice * item.quantity).toFixed(2)}</strong>
+          </div>
+        `).join('');
+        document.getElementById('order-items-list').innerHTML = itemsHtml;
+
+        const customer = order.customer;
+        const addressHtml = `
+          <strong>${customer.first_name} ${customer.last_name}</strong><br>
+          ${customer.address}<br>
+          ${customer.city}, ${customer.state} ${customer.zip}<br>
+          ${customer.country}
+        `;
+        document.getElementById('shipping-address-box').innerHTML = addressHtml;
+
+        document.getElementById('loading-section').style.display = 'none';
+        document.getElementById('success-content').style.display = 'block';
+
+      } catch (err) {
+        document.getElementById('loading-section').style.display = 'none';
+        document.getElementById('error-section').style.display = 'block';
+        document.getElementById('error-msg').textContent = err.message;
+      }
+    }
+
+    confirmPayment();
+  </script>
+</body>
+</html>
