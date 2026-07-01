@@ -142,7 +142,6 @@ function renderDynamicProducts() {
         <img alt="${p.name}" class="product-photo" src="${p.image}"/>
       </div>
       <div class="product-meta"><div><h3>${p.name.toUpperCase()}</h3><p>${p.description}</p></div><strong>$${p.price.toFixed(2)}</strong></div>
-      <button class="add-product">ADD TO CART <b>＋</b></button>
     </article>
   `).join('');
 
@@ -169,20 +168,18 @@ function renderProduct() {
 }
 
 function bindProductListeners() {
-  $$('.add-product').forEach(btn => btn.addEventListener('click', () => {
-    const card = btn.closest('.factory-product');
-    cart.push({name: card.dataset.name, price: +card.dataset.price});
-    renderCart();
-    showToast('ADDED TO FACTORY CART');
+  $$('.factory-product').forEach(card => card.addEventListener('click', (e) => {
+    if (!e.target.closest('.product-stage')) return;
+    const name = card.dataset.name;
+    const prod = backendProducts.find(p => p.name === name) || { name, price: +card.dataset.price };
+    openProductPage(prod);
   }));
 
-  $$('.catalog-add').forEach(btn => btn.addEventListener('click', () => {
-    const card = btn.closest('.catalog-card');
-    cart.push({name: card.dataset.name, price: +card.dataset.price});
-    renderCart();
-    showToast('ADDED TO FACTORY CART');
-    btn.innerHTML = 'ADDED <b>✓</b>';
-    setTimeout(() => btn.innerHTML = 'ADD TO CART <b>＋</b>', 1100);
+  $$('.catalog-card').forEach(card => card.addEventListener('click', (e) => {
+    if (!e.target.closest('.catalog-image-wrap') && !e.target.closest('.catalog-add')) return;
+    const name = card.dataset.name;
+    const prod = backendProducts.find(p => p.name === name) || { name, price: +card.dataset.price };
+    openProductPage(prod);
   }));
 
   const counts = { all: backendProducts.length, hoodie: 0, tee: 0, accessory: 0 };
@@ -215,10 +212,10 @@ function money(v){return '$'+v.toFixed(2)}
 function renderCart(){
   $('.cart-trigger b').textContent=cart.length;
   const catalogCount=$('.catalog-cart-count');if(catalogCount)catalogCount.textContent=cart.length;
-  $('.cart-total').textContent=money(cart.reduce((a,b)=>a+b.price,0));
+  $('.cart-total').textContent=money(cartTotal());
   const list=$('.cart-list');
   if(!cart.length){list.innerHTML='<div class="empty-cart"><b>13</b><p>THE LINE IS EMPTY.</p></div>';return}
-  list.innerHTML=cart.map((p,i)=>`<div class="cart-item"><div class="cart-thumb">13</div><div><h4>${p.name}</h4><p>${money(p.price)} · QTY 1</p></div><button class="remove-item" data-i="${i}" aria-label="Remove ${p.name}">×</button></div>`).join('');
+  list.innerHTML=cart.map((p,i)=>`<div class="cart-item"><div class="cart-thumb" style="padding:5px;"><img src="${p.image||''}" style="width:100%;height:100%;object-fit:cover;opacity:0.9;border-radius:4px;"/></div><div><h4>${p.name}</h4><p>${money(p.price)} · QTY ${p.quantity||1}</p><p style="font-size:0.55rem;opacity:0.7;margin-top:4px">${p.size ? 'SIZE: '+p.size : ''} ${p.color ? '| '+p.color : ''}</p></div><button class="remove-item" data-i="${i}" aria-label="Remove ${p.name}">×</button></div>`).join('');
   $$('.remove-item').forEach(b=>b.addEventListener('click',()=>{cart.splice(+b.dataset.i,1);renderCart();showToast('REMOVED FROM CART')}));
 }
 // Dynamic add-to-cart moved to bindProductListeners
@@ -226,12 +223,81 @@ function showToast(text){const t=$('.toast');t.textContent=text;t.classList.add(
 
 renderCart();
 
+// Global shipping countries and phone country codes
+const countries = [
+  { name: "United States", code: "+1" },
+  { name: "Canada", code: "+1" },
+  { name: "United Kingdom", code: "+44" },
+  { name: "Australia", code: "+61" },
+  { name: "Sri Lanka", code: "+94" },
+  { name: "Germany", code: "+49" },
+  { name: "France", code: "+33" },
+  { name: "Italy", code: "+39" },
+  { name: "Spain", code: "+34" },
+  { name: "Netherlands", code: "+31" },
+  { name: "New Zealand", code: "+64" },
+  { name: "Japan", code: "+81" },
+  { name: "India", code: "+91" },
+  { name: "Singapore", code: "+65" },
+  { name: "Brazil", code: "+55" },
+  { name: "South Africa", code: "+27" },
+  { name: "United Arab Emirates", code: "+971" },
+  { name: "Saudi Arabia", code: "+966" },
+  { name: "Mexico", code: "+52" },
+  { name: "Ireland", code: "+353" },
+  { name: "Switzerland", code: "+41" },
+  { name: "Sweden", code: "+46" },
+  { name: "Norway", code: "+47" },
+  { name: "Denmark", code: "+45" },
+  { name: "Belgium", code: "+32" },
+  { name: "Austria", code: "+43" },
+  { name: "Portugal", code: "+351" },
+  { name: "Turkey", code: "+90" },
+  { name: "Poland", code: "+48" },
+  { name: "South Korea", code: "+82" },
+  { name: "Malaysia", code: "+60" },
+  { name: "Thailand", code: "+66" },
+  { name: "Philippines", code: "+63" },
+  { name: "Indonesia", code: "+62" },
+  { name: "Vietnam", code: "+84" },
+  { name: "Pakistan", code: "+92" },
+  { name: "Bangladesh", code: "+880" }
+];
+
+function initCountrySelectors(defaultCountry) {
+  const countrySelect = $('select[name="country"]');
+  const phoneCodeSelect = $('select[name="phone_country_code"]');
+  if (!countrySelect || !phoneCodeSelect) return;
+
+  const sortedCountries = [...countries].sort((a, b) => a.name.localeCompare(b.name));
+
+  countrySelect.innerHTML = sortedCountries.map(c => 
+    `<option value="${c.name}" ${c.name === defaultCountry ? 'selected' : ''}>${c.name}</option>`
+  ).join('');
+
+  phoneCodeSelect.innerHTML = sortedCountries
+    .filter(c => c.code)
+    .map(c => `<option value="${c.code}" ${c.name === defaultCountry ? 'selected' : ''}>${c.code} (${c.name})</option>`)
+    .join('');
+
+  countrySelect.addEventListener('change', () => {
+    const selectedCountry = countrySelect.value;
+    const match = sortedCountries.find(c => c.name === selectedCountry);
+    if (match && match.code) {
+      phoneCodeSelect.value = match.code;
+    }
+  });
+}
+
+// Initialize selectors with United States as default
+initCountrySelectors("United States");
+
 // PayPal checkout
 const checkoutPanel=$('.checkout-panel');
 const checkoutForm=$('#checkout-form');
 const checkoutState=$('.payment-state');
 
-function cartTotal(){return cart.reduce((sum,item)=>sum+Number(item.price),0)}
+function cartTotal(){return cart.reduce((sum,item)=>sum+(Number(item.price)*Number(item.quantity||1)),0)}
 function setPaymentState(message,type='info'){
   checkoutState.textContent=message;
   checkoutState.className=`payment-state show ${type}`;
@@ -239,7 +305,7 @@ function setPaymentState(message,type='info'){
 function clearPaymentState(){checkoutState.textContent='';checkoutState.className='payment-state'}
 function renderCheckoutSummary(){
   const items=$('.checkout-items');
-  items.innerHTML=cart.map(item=>`<div class="checkout-summary-item"><span>${item.name}</span><strong>${money(Number(item.price))}</strong></div>`).join('');
+  items.innerHTML=cart.map(item=>`<div class="checkout-summary-item"><span>${item.quantity||1}x ${item.name} <small style="display:block;opacity:0.6;font-size:0.8em;margin-top:3px;">${item.size||''} ${item.color||''}</small></span><strong>${money(Number(item.price)*(item.quantity||1))}</strong></div>`).join('');
   $('.checkout-total strong').textContent=money(cartTotal());
 }
 function openCheckout(){
@@ -252,70 +318,303 @@ $('.checkout-trigger').addEventListener('click',openCheckout);
 $('.checkout-close').addEventListener('click',closeCheckout);
 checkoutPanel.addEventListener('click',e=>{if(e.target===checkoutPanel)closeCheckout()});
 
-async function initPayPal() {
-  try {
-    const res = await fetch('/api/paypal/client-id');
-    const { clientId } = await res.json();
-    if (!clientId) {
-      console.warn('PayPal Client ID is not configured.');
+// Payment method selector logic
+$$('.payment-method-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    $$('.payment-method-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    $$('.payment-section').forEach(section => section.classList.remove('active'));
+    $(`#${btn.dataset.target}`).classList.add('active');
+  });
+});
+
+function getCustomerData() {
+  const customer = Object.fromEntries(new FormData(checkoutForm).entries());
+  if (customer.phone_country_code && customer.phone) {
+    customer.phone = `${customer.phone_country_code} ${customer.phone}`;
+    delete customer.phone_country_code;
+  }
+  return customer;
+}
+
+// Stripe Submit Logic
+const stripeSubmitBtn = $('#stripe-submit-btn');
+if (stripeSubmitBtn) {
+  stripeSubmitBtn.addEventListener('click', async () => {
+    if (!checkoutForm.reportValidity()) {
+      showToast('PLEASE FILL OUT ALL DETAILS');
       return;
     }
     
+    try {
+      stripeSubmitBtn.disabled = true;
+      stripeSubmitBtn.textContent = 'CREATING CHECKOUT...';
+      setPaymentState('Creating Stripe Checkout session...', 'info');
+      
+      const customer = getCustomerData();
+      const response = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ cart, customer })
+      });
+      
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to initiate Stripe checkout');
+      
+      // Redirect to Stripe hosted page
+      window.location.href = result.url;
+    } catch (err) {
+      console.error('Stripe Checkout Error:', err);
+      setPaymentState(err.message, 'error');
+      stripeSubmitBtn.disabled = false;
+      stripeSubmitBtn.textContent = 'PAY WITH STRIPE (CARDS / APPLE / GOOGLE PAY)';
+    }
+  });
+}
+
+let paypalLoaded = false;
+let cardFieldsInstance = null;
+
+async function initPayPal() {
+  try {
+    const res = await fetch('/api/paypal/config');
+    const { clientId } = await res.json();
+    if (!clientId) {
+      console.warn('PayPal is not configured.');
+      return;
+    }
     const script = document.createElement('script');
-    script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD`;
+    script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&components=buttons,card-fields&currency=USD`;
     script.onload = () => {
-      paypal.Buttons({
-        createOrder: async (data, actions) => {
-          if (!checkoutForm.checkValidity()) {
-              checkoutForm.reportValidity();
-              throw new Error('Validation failed');
-          }
-          const customer = Object.fromEntries(new FormData(checkoutForm).entries());
-          const response = await fetch('/api/paypal/create-order', {
-              method: 'POST',
-              headers: {'Content-Type': 'application/json'},
-              body: JSON.stringify({cart, customer})
-          });
-          const result = await response.json();
-          if (!response.ok) {
-              setPaymentState(result.error || 'Failed to create order', 'error');
-              throw new Error(result.error);
-          }
-          return result.id;
-        },
-        onApprove: async (data, actions) => {
-          setPaymentState('Capturing payment...', 'info');
-          const response = await fetch('/api/paypal/capture-order', {
-              method: 'POST',
-              headers: {'Content-Type': 'application/json'},
-              body: JSON.stringify({orderID: data.orderID})
-          });
-          const result = await response.json();
-          if (!response.ok) {
-              setPaymentState(result.error || 'Failed to capture payment', 'error');
-              return;
-          }
-          setPaymentState(`Payment confirmed. Order ${data.orderID} is paid.`, 'success');
-          cart = [];
-          renderCart();
-        },
-        onError: (err) => {
-          if (err.message !== 'Validation failed') {
-            setPaymentState(`Payment error: ${err.message || err}`, 'error');
-          }
-        }
-      }).render('#paypal-button-container');
+      paypalLoaded = true;
+      if ($('.checkout-panel').classList.contains('open')) {
+        renderPayPalButtons();
+        renderPayPalCardFields();
+      }
     };
     document.body.appendChild(script);
   } catch (error) {
     console.error('Failed to init PayPal', error);
   }
 }
+
 initPayPal();
 
-checkoutForm.addEventListener('submit', e => {
-  e.preventDefault();
+function renderPayPalButtons() {
+  if (!window.paypal) return;
+  const container = $('#paypal-button-container');
+  if (!container) return;
+  container.innerHTML = '';
+
+  window.paypal.Buttons({
+    style: {
+      layout: 'vertical',
+      color:  'gold',
+      shape:  'rect',
+      label:  'paypal',
+      height: 48
+    },
+    onClick: (data, actions) => {
+      if (!checkoutForm.reportValidity()) {
+        showToast('PLEASE FILL OUT ALL DETAILS');
+        return actions.reject();
+      }
+      return actions.resolve();
+    },
+    createOrder: async () => {
+      try {
+        setPaymentState('Creating PayPal order...', 'info');
+        const customer = getCustomerData();
+        const response = await fetch('/api/paypal/create-order', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ cart, customer })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error);
+        clearPaymentState();
+        return result.id;
+      } catch (err) {
+        setPaymentState('Failed to create order: ' + err.message, 'error');
+        throw err;
+      }
+    },
+    onApprove: async (data, actions) => {
+      try {
+        setPaymentState('Processing your payment...', 'info');
+        const response = await fetch('/api/paypal/capture-order', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ paypalOrderId: data.orderID })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error);
+        
+        setPaymentState('Payment confirmed! Order received.', 'success');
+        cart = [];
+        renderCart();
+        
+        setTimeout(() => {
+          closeCheckout();
+          showToast('ORDER PLACED SUCCESSFULLY');
+        }, 2000);
+      } catch (err) {
+        setPaymentState('Payment failed: ' + err.message, 'error');
+      }
+    },
+    onError: (err) => {
+      console.error('PayPal error:', err);
+      setPaymentState('PayPal transaction encountered an error.', 'error');
+    }
+  }).render('#paypal-button-container');
+}
+
+async function renderPayPalCardFields() {
+  if (!window.paypal || !window.paypal.CardFields) {
+    console.warn('PayPal CardFields not loaded.');
+    $('#paypal-card-form').style.display = 'none';
+    return;
+  }
+
+  const submitBtn = $('#paypal-card-submit-btn');
+  if (cardFieldsInstance) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'PAY WITH CARD';
+    return;
+  }
+
+  try {
+    cardFieldsInstance = window.paypal.CardFields({
+      style: {
+        input: {
+          'font-size': '14px',
+          'font-family': 'Arial, Helvetica, sans-serif',
+          'color': '#101412',
+          'background': 'transparent',
+          'border': 'none',
+          'outline': 'none',
+          'box-shadow': 'none',
+          'padding': '0px',
+        },
+        '.focused': {
+          'color': '#101412',
+        },
+        '.invalid': {
+          'color': '#ef746d',
+        }
+      },
+      createOrder: async () => {
+        try {
+          setPaymentState('Creating order...', 'info');
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'CREATING ORDER...';
+          const customer = getCustomerData();
+          const response = await fetch('/api/paypal/create-order', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ cart, customer })
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error);
+          return result.id;
+        } catch (err) {
+          setPaymentState('Failed to create order: ' + err.message, 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'PAY WITH CARD';
+          throw err;
+        }
+      },
+      onApprove: async (data) => {
+        try {
+          setPaymentState('Processing your payment...', 'info');
+          submitBtn.textContent = 'PROCESSING PAYMENT...';
+          const response = await fetch('/api/paypal/capture-order', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ paypalOrderId: data.orderID })
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error);
+          
+          setPaymentState('Payment confirmed! Order received.', 'success');
+          submitBtn.textContent = 'SUCCESS!';
+          cart = [];
+          renderCart();
+          
+          setTimeout(() => {
+            closeCheckout();
+            showToast('ORDER PLACED SUCCESSFULLY');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'PAY WITH CARD';
+          }, 2000);
+        } catch (err) {
+          setPaymentState('Payment failed: ' + err.message, 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'PAY WITH CARD';
+        }
+      },
+      onError: (err) => {
+        console.error('PayPal CardFields error:', err);
+        setPaymentState('Card verification failed. Please check card details.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'PAY WITH CARD';
+      }
+    });
+
+    if (cardFieldsInstance.isEligible()) {
+      const numberField = cardFieldsInstance.NumberField();
+      await numberField.render('#card-number-container');
+
+      const expiryField = cardFieldsInstance.ExpiryField();
+      await expiryField.render('#card-expiry-container');
+
+      const cvvField = cardFieldsInstance.CVVField();
+      await cvvField.render('#card-cvv-container');
+
+      submitBtn.addEventListener('click', async () => {
+        if (!checkoutForm.reportValidity()) {
+          showToast('PLEASE FILL OUT ALL DETAILS');
+          return;
+        }
+        setPaymentState('Submitting payment...', 'info');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'SUBMITTING...';
+        try {
+          await cardFieldsInstance.submit();
+        } catch (err) {
+          console.error('CardFields submission error:', err);
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'PAY WITH CARD';
+        }
+      });
+    } else {
+      console.warn('CardFields is not eligible.');
+      $('#paypal-card-form').style.display = 'none';
+    }
+  } catch (err) {
+    console.error('Failed to render CardFields:', err);
+  }
+}
+
+// Override openCheckout to render PayPal buttons when opened
+const originalOpenCheckout = openCheckout;
+openCheckout = function() {
+  originalOpenCheckout();
+  if (paypalLoaded) {
+    renderPayPalButtons();
+    renderPayPalCardFields();
+  } else {
+    setPaymentState('Loading PayPal gateway...', 'info');
+  }
+};
+
+// Re-bind listeners to ensure the overridden openCheckout is used
+$$('.checkout-trigger').forEach(btn => {
+  btn.removeEventListener('click', originalOpenCheckout);
+  btn.addEventListener('click', openCheckout);
 });
+
 
 // Full all-merch catalog
 const catalogPanel=$('.catalog-panel');
@@ -367,3 +666,275 @@ $$('.youtube-channel-link').forEach(link=>{
 });
 
 goToStage(0);
+
+
+// === DEDICATED PRODUCT PAGE LOGIC ===
+const ppPanel = $('.product-page-panel');
+let currentPpProduct = null;
+
+const ppSwatchColors = {
+  'White': '#ffffff',
+  'Black': '#111111',
+  'Grey': '#7a7a7a',
+  'Ice Blue': '#a9c5db',
+  'Blue Jean': '#4b6e8a',
+  'Chambray': '#586b8c',
+  'Flo Blue': '#3d83c4',
+  'Granite': '#e2ded5'
+};
+
+const ppFilters = {
+  'White': 'invert(0.85) brightness(1.2) contrast(0.85) grayscale(1)',
+  'Black': 'none',
+  'Grey': 'invert(0.4) brightness(1.0) grayscale(1)',
+  'Ice Blue': 'invert(0.7) sepia(0.5) hue-rotate(160deg) saturate(2) brightness(1.1)',
+  'Blue Jean': 'invert(0.3) sepia(0.8) hue-rotate(185deg) saturate(1.3) brightness(0.9)',
+  'Chambray': 'invert(0.5) sepia(0.6) hue-rotate(180deg) saturate(1.0) brightness(1.0)',
+  'Flo Blue': 'invert(0.4) sepia(0.9) hue-rotate(180deg) saturate(2.5) brightness(0.95)',
+  'Granite': 'invert(0.15) brightness(0.85) contrast(1.1) grayscale(1)'
+};
+
+const ppDescriptions = {
+  'tee': `
+    <p>Premium quality embroidered t-shirt. Featuring a comfortable standard fit, clean detailing, and soft wash finish.</p>
+    <ul>
+      <li>100% combed ring-spun cotton</li>
+      <li>Soft, lightweight wash finish</li>
+      <li>Custom embroidery detailing on chest</li>
+    </ul>
+  `,
+  'hoodie': `
+    <p>An absolute classic heavyweight hoodie. Featuring a heavyweight blend, soft fleece lining, and standard fit.</p>
+    <ul>
+      <li>80% cotton, 20% polyester blend</li>
+      <li>Soft brushed interior lining</li>
+      <li>Front kangaroo pouch pocket</li>
+    </ul>
+  `,
+  'default': `
+    <p>Official community merchandise from the jMunz13 factory. Custom crafted from high-quality materials.</p>
+    <ul>
+      <li>Premium quality design</li>
+      <li>Soft feel and durable stitching</li>
+      <li>Authentic jMunz13 branding</li>
+    </ul>
+  `
+};
+
+const ppSizeCharts = {
+  'tee': `
+    <p style="font-family: var(--mono); font-size: 0.75rem; line-height: 1.5; margin: 0;">
+      S &nbsp;: Width 18" / Length 28"<br/>
+      M &nbsp;: Width 20" / Length 29"<br/>
+      L &nbsp;: Width 22" / Length 30"<br/>
+      XL : Width 24" / Length 31"<br/>
+      2XL: Width 26" / Length 32"<br/>
+      3XL: Width 28" / Length 33"
+    </p>
+  `,
+  'hoodie': `
+    <p style="font-family: var(--mono); font-size: 0.75rem; line-height: 1.5; margin: 0;">
+      S &nbsp;: Width 20" / Length 27"<br/>
+      M &nbsp;: Width 22" / Length 28"<br/>
+      L &nbsp;: Width 24" / Length 29"<br/>
+      XL : Width 26" / Length 30"<br/>
+      2XL: Width 28" / Length 31"<br/>
+      3XL: Width 30" / Length 32"
+    </p>
+  `,
+  'default': `
+    <p style="font-family: var(--mono); font-size: 0.75rem; line-height: 1.5; margin: 0;">
+      Standard fit. Fits true to size. Recommended to wash cold and line dry.
+    </p>
+  `
+};
+
+function updatePpImageColor(color) {
+  const img = $('#pp-product-img');
+  if (img) {
+    img.style.filter = ppFilters[color] || 'none';
+  }
+}
+
+function renderPpSwatches(colors) {
+  const container = $('#pp-swatches-grid');
+  if (!container) return;
+  container.innerHTML = '';
+  
+  colors.forEach((color, i) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pp-swatch' + (i === 0 ? ' active' : '');
+    btn.dataset.colorName = color;
+    btn.style.setProperty('--swatch-color', ppSwatchColors[color] || '#ffffff');
+    btn.title = color;
+    
+    btn.addEventListener('click', () => {
+      $$('.pp-swatch').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      // Update label
+      $('#pp-color-label').textContent = `COLOR: ${color.toUpperCase()}`;
+      
+      // Sync hidden select value
+      const select = $('#pp-color-select');
+      if (select) {
+        select.value = color;
+      }
+      
+      // Update image color filter
+      updatePpImageColor(color);
+    });
+    
+    container.appendChild(btn);
+  });
+}
+
+function openProductPage(product) {
+  currentPpProduct = product;
+  $('#pp-product-name').textContent = product.name;
+  
+  // Set Category
+  const category = (product.category || 'item').toUpperCase();
+  $('#pp-product-category').textContent = category;
+  
+  // Set Description & Size Chart
+  const catKey = product.category || 'default';
+  $('#pp-desc-content').innerHTML = ppDescriptions[catKey] || ppDescriptions['default'];
+  $('#pp-size-chart-content').innerHTML = ppSizeCharts[catKey] || ppSizeCharts['default'];
+  
+  // Set Image
+  const img = $('#pp-product-img');
+  if (img) {
+    img.src = product.image || '';
+    img.alt = product.name;
+  }
+  
+  // Render Swatches
+  const colorsToRender = product.colors && product.colors.length > 0 
+    ? product.colors 
+    : ['White', 'Black', 'Grey', 'Ice Blue', 'Blue Jean', 'Chambray', 'Flo Blue', 'Granite'];
+    
+  renderPpSwatches(colorsToRender);
+  
+  // Reset Hidden Select
+  const select = $('#pp-color-select');
+  if (select) {
+    select.innerHTML = colorsToRender.map(c => `<option value="${c}">${c}</option>`).join('');
+    select.selectedIndex = 0;
+  }
+  
+  // Set Initial Color Label
+  $('#pp-color-label').textContent = `COLOR: ${colorsToRender[0].toUpperCase()}`;
+  updatePpImageColor(colorsToRender[0]);
+  
+  // Reset Quantity
+  $('#pp-qty-input').value = 1;
+  
+  // Reset Size Chart
+  const sizeRadios = $$('input[name="pp_size"]');
+  if (sizeRadios && sizeRadios.length > 0) {
+    sizeRadios[0].checked = true;
+  }
+  updatePpPrice();
+  
+  closeCart();
+  closeCatalog();
+  ppPanel.classList.add('open');
+  ppPanel.setAttribute('aria-hidden', 'false');
+  
+  // Update cart count inside product page header
+  const pCartTotal = $('.product-page-cart-trigger b');
+  if (pCartTotal) {
+    pCartTotal.textContent = cart.length;
+  }
+}
+
+function closeProductPage() {
+  ppPanel.classList.remove('open');
+  ppPanel.setAttribute('aria-hidden', 'true');
+  currentPpProduct = null;
+}
+
+function updatePpPrice() {
+  if (!currentPpProduct) return;
+  const basePrice = Number(currentPpProduct.price);
+  const sizeRadio = $('input[name="pp_size"]:checked');
+  const sizeAdd = sizeRadio && sizeRadio.dataset.priceAdd ? Number(sizeRadio.dataset.priceAdd) : 0;
+  const unitPrice = basePrice + sizeAdd;
+  const qty = Number($('#pp-qty-input').value);
+  const total = unitPrice * qty;
+  
+  $('#pp-product-price').textContent = money(unitPrice);
+  $('#pp-total-price').textContent = money(total);
+}
+
+$('#pp-qty-minus').addEventListener('click', () => {
+  const inp = $('#pp-qty-input');
+  if (inp.value > 1) { inp.value = Number(inp.value) - 1; updatePpPrice(); }
+});
+$('#pp-qty-plus').addEventListener('click', () => {
+  const inp = $('#pp-qty-input');
+  if (inp.value < 99) { inp.value = Number(inp.value) + 1; updatePpPrice(); }
+});
+
+$$('input[name="pp_size"]').forEach(r => r.addEventListener('change', updatePpPrice));
+
+$('.product-page-back').addEventListener('click', closeProductPage);
+
+// Connect Cart trigger inside product page header
+$('.product-page-cart-trigger').addEventListener('click', openCart);
+
+// Override renderCart to update the cart count in the product page too
+const originalRenderCart = renderCart;
+renderCart = function() {
+  originalRenderCart();
+  const pCartTotal = $('.product-page-cart-trigger b');
+  if (pCartTotal) {
+    pCartTotal.textContent = cart.length;
+  }
+};
+
+$('#pp-confirm-btn').addEventListener('click', () => {
+  if (!currentPpProduct) return;
+  
+  const sizeRadio = $('input[name="pp_size"]:checked');
+  const sizeAdd = sizeRadio && sizeRadio.dataset.priceAdd ? Number(sizeRadio.dataset.priceAdd) : 0;
+  
+  const cartItem = {
+    id: currentPpProduct.id,
+    name: currentPpProduct.name,
+    price: Number(currentPpProduct.price) + sizeAdd,
+    color: $('#pp-color-select').value,
+    size: sizeRadio ? sizeRadio.value : 'S',
+    quantity: Number($('#pp-qty-input').value),
+    image: currentPpProduct.image
+  };
+  
+  cart.push(cartItem);
+  renderCart();
+  closeProductPage();
+  openCart();
+  showToast('ADDED TO CART');
+});
+
+$('#pp-buy-now-btn').addEventListener('click', () => {
+  if (!currentPpProduct) return;
+  const sizeRadio = $('input[name="pp_size"]:checked');
+  const sizeAdd = sizeRadio && sizeRadio.dataset.priceAdd ? Number(sizeRadio.dataset.priceAdd) : 0;
+  const cartItem = {
+    id: currentPpProduct.id,
+    name: currentPpProduct.name,
+    price: Number(currentPpProduct.price) + sizeAdd,
+    color: $('#pp-color-select').value,
+    size: sizeRadio ? sizeRadio.value : 'S',
+    quantity: Number($('#pp-qty-input').value),
+    image: currentPpProduct.image
+  };
+  cart.push(cartItem);
+  renderCart();
+  closeProductPage();
+  openCheckout();
+});
+
+

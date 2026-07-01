@@ -1,8 +1,8 @@
 {
-  "name": "jmunz-merch-factory-payhere",
+  "name": "jmunz-merch-factory-checkout",
   "version": "1.0.0",
   "private": true,
-  "description": "JMUNZ animated merch store with PayHere checkout",
+  "description": "JMUNZ animated merch store with Stripe and PayPal checkout",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -15,6 +15,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.7.2"
+    "mongoose": "^9.7.2",
+    "stripe": "^22.2.3"
   }
 }

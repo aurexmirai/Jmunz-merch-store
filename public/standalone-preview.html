@@ -71,7 +71,7 @@ button{cursor:pointer}
 @media(max-width:720px){.product-carousel{height:56vh}.product-stage.photo{height:70%;padding:10px 8px 0}.product-meta{height:17%}.product-meta div{max-width:68%}.product-meta h3{font-size:.98rem}.stage-shop .add-product{height:13%}.product-badge{font-size:.48rem;padding:6px 8px}}
 
 /* Animated YouTube channel promotion */
-.youtube-header-link{position:relative;display:flex;align-items:center;gap:9px;text-decoration:none;padding:5px 12px 5px 5px;border:1px solid rgba(255,255,255,.34);border-radius:999px;background:#ff1f2d;color:#fff!important;box-shadow:0 8px 26px rgba(255,31,45,.28);isolation:isolate;overflow:hidden;transition:transform .25s ease,box-shadow .25s ease}
+.youtube-header-wrapper{position:absolute;top:50%;left:0;z-index:5;width:max-content;animation:travelHeader 20s linear infinite}.youtube-header-wrapper:hover{animation-play-state:paused}@keyframes travelHeader{0%{transform:translate(-100%,-50%)}100%{transform:translate(100vw,-50%)}}.youtube-header-link{position:relative;display:flex;align-items:center;gap:9px;text-decoration:none;padding:5px 12px 5px 5px;border:1px solid rgba(255,255,255,.34);border-radius:999px;background:#ff1f2d;color:#fff!important;box-shadow:0 8px 26px rgba(255,31,45,.28);isolation:isolate;overflow:hidden;transition:transform .25s ease,box-shadow .25s ease}
 .youtube-header-link:before{content:"";position:absolute;inset:-50%;z-index:-1;background:linear-gradient(115deg,transparent 34%,rgba(255,255,255,.42) 49%,transparent 64%);transform:translateX(-70%) rotate(8deg);animation:ytShine 3.8s ease-in-out infinite}
 .youtube-header-link:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 14px 34px rgba(255,31,45,.42)}
 .yt-play-icon{width:31px;height:31px;border-radius:50%;background:#fff;display:grid;place-items:center;position:relative;box-shadow:0 0 0 0 rgba(255,255,255,.42);animation:ytPulse 1.8s ease-out infinite}
@@ -96,7 +96,7 @@ button{cursor:pointer}
 @keyframes ytBlink{to{opacity:.28}}
 @keyframes ytClick{50%{transform:scale(.92)}100%{transform:scale(1)}}
 @media(max-width:980px){.yt-header-copy{display:none}.youtube-header-link{padding-right:5px}.youtube-floating-card{right:-5%;top:5%;transform:scale(.88) rotate(4deg)}}
-@media(max-width:720px){.youtube-header-link{display:none}.youtube-hero-cta{margin-top:10px}.yt-hero-icon{width:41px;height:41px}.yt-hero-text{min-width:120px}.youtube-floating-card{display:none}.menu-youtube-link{font-size:9vw}.intro-copy{top:11vh}.intro-copy h1{margin-bottom:18px}.intro-copy p{margin-bottom:15px}.start-button{margin-top:20px}}
+@media(max-width:720px){.youtube-header-wrapper{display:none}.youtube-header-link{display:none}.youtube-hero-cta{margin-top:10px}.yt-hero-icon{width:41px;height:41px}.yt-hero-text{min-width:120px}.youtube-floating-card{display:none}.menu-youtube-link{font-size:9vw}.intro-copy{top:11vh}.intro-copy h1{margin-bottom:18px}.intro-copy p{margin-bottom:15px}.start-button{margin-top:20px}}
 
 
 /* Full all-merch catalog */
@@ -163,11 +163,13 @@ button{cursor:pointer}
       <span>JMUNZ<br>MERCH FACTORY</span>
     </a>
     <div class="chapter-name">WELCOME</div>
-    <div class="top-actions">
+    <div class="youtube-header-wrapper">
       <a class="youtube-header-link youtube-channel-link" href="https://www.youtube.com/@jmunz13" target="_blank" rel="noopener noreferrer" aria-label="Open the official jMunz13 YouTube channel">
         <img class="yt-brand-logo" src="assets/jmunz-channel-logo.png" alt="" aria-hidden="true">
         <span class="yt-header-copy"><small>OFFICIAL CHANNEL</small><b>YOUTUBE ↗</b></span>
       </a>
+    </div>
+    <div class="top-actions">
       <button class="sound-toggle" type="button" aria-label="Toggle ambient sound">
         <span class="sound-bars"><i></i><i></i><i></i><i></i></span>
         <em>SOUND OFF</em>
@@ -572,17 +574,16 @@ button{cursor:pointer}
           <label>FIRST NAME<input name="first_name" autocomplete="given-name" required></label>
           <label>LAST NAME<input name="last_name" autocomplete="family-name" required></label>
           <label class="full">EMAIL<input name="email" type="email" autocomplete="email" required></label>
-          <label>PHONE<input name="phone" autocomplete="tel" required></label>
+          <label class="full">PHONE
+            <div class="phone-input-container">
+              <select name="phone_country_code" class="phone-code-select" required></select>
+              <input name="phone" type="tel" autocomplete="tel" required />
+            </div>
+          </label>
           <label>CITY<input name="city" autocomplete="address-level2" required></label>
           <label class="full">DELIVERY ADDRESS<input name="address" autocomplete="street-address" required></label>
           <label class="full">COUNTRY
             <select name="country" required>
-              <option value="Sri Lanka" selected>Sri Lanka</option>
-              <option value="United States">United States</option>
-              <option value="United Kingdom">United Kingdom</option>
-              <option value="Canada">Canada</option>
-              <option value="Australia">Australia</option>
-              <option value="Other">Other</option>
             </select>
           </label>
           <div class="payment-state" role="status"></div>
@@ -627,6 +628,75 @@ let locked = false;
 let touchStartX = 0;
 let productIndex = 0;
 let cart = [];
+
+// Global shipping countries and phone country codes
+const countries = [
+  { name: "United States", code: "+1" },
+  { name: "Canada", code: "+1" },
+  { name: "United Kingdom", code: "+44" },
+  { name: "Australia", code: "+61" },
+  { name: "Sri Lanka", code: "+94" },
+  { name: "Germany", code: "+49" },
+  { name: "France", code: "+33" },
+  { name: "Italy", code: "+39" },
+  { name: "Spain", code: "+34" },
+  { name: "Netherlands", code: "+31" },
+  { name: "New Zealand", code: "+64" },
+  { name: "Japan", code: "+81" },
+  { name: "India", code: "+91" },
+  { name: "Singapore", code: "+65" },
+  { name: "Brazil", code: "+55" },
+  { name: "South Africa", code: "+27" },
+  { name: "United Arab Emirates", code: "+971" },
+  { name: "Saudi Arabia", code: "+966" },
+  { name: "Mexico", code: "+52" },
+  { name: "Ireland", code: "+353" },
+  { name: "Switzerland", code: "+41" },
+  { name: "Sweden", code: "+46" },
+  { name: "Norway", code: "+47" },
+  { name: "Denmark", code: "+45" },
+  { name: "Belgium", code: "+32" },
+  { name: "Austria", code: "+43" },
+  { name: "Portugal", code: "+351" },
+  { name: "Turkey", code: "+90" },
+  { name: "Poland", code: "+48" },
+  { name: "South Korea", code: "+82" },
+  { name: "Malaysia", code: "+60" },
+  { name: "Thailand", code: "+66" },
+  { name: "Philippines", code: "+63" },
+  { name: "Indonesia", code: "+62" },
+  { name: "Vietnam", code: "+84" },
+  { name: "Pakistan", code: "+92" },
+  { name: "Bangladesh", code: "+880" }
+];
+
+function initCountrySelectors(defaultCountry) {
+  const countrySelect = $('select[name="country"]');
+  const phoneCodeSelect = $('select[name="phone_country_code"]');
+  if (!countrySelect || !phoneCodeSelect) return;
+
+  const sortedCountries = [...countries].sort((a, b) => a.name.localeCompare(b.name));
+
+  countrySelect.innerHTML = sortedCountries.map(c => 
+    `<option value="${c.name}" ${c.name === defaultCountry ? 'selected' : ''}>${c.name}</option>`
+  ).join('');
+
+  phoneCodeSelect.innerHTML = sortedCountries
+    .filter(c => c.code)
+    .map(c => `<option value="${c.code}" ${c.name === defaultCountry ? 'selected' : ''}>${c.code} (${c.name})</option>`)
+    .join('');
+
+  countrySelect.addEventListener('change', () => {
+    const selectedCountry = countrySelect.value;
+    const match = sortedCountries.find(c => c.name === selectedCountry);
+    if (match && match.code) {
+      phoneCodeSelect.value = match.code;
+    }
+  });
+}
+
+// Initialize selectors with Sri Lanka as default
+initCountrySelectors("Sri Lanka");
 
 // Preloader
 let load = 0;
@@ -803,6 +873,10 @@ checkoutForm.addEventListener('submit',async e=>{
   checkoutButton.disabled=true;setPaymentState('Preparing secure payment…','info');
   try{
     const customer=Object.fromEntries(new FormData(checkoutForm).entries());
+    if (customer.phone_country_code && customer.phone) {
+      customer.phone = `${customer.phone_country_code} ${customer.phone}`;
+      delete customer.phone_country_code;
+    }
     const response=await fetch('/api/payhere/create-payment',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({cart,customer})

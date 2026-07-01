@@ -4,15 +4,45 @@ const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
+
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const BASE_URL = (process.env.BASE_URL || `http://localhost:${PORT}`).replace(/\/$/, '');
 
+const CURRENCY = 'usd';
+const MONGODB_URI = process.env.MONGODB_URI || '';
+
+const PAYPAL_ENVIRONMENT = process.env.PAYPAL_ENVIRONMENT || 'sandbox';
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID || '';
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET || '';
-const PAYPAL_ENVIRONMENT = process.env.PAYPAL_ENVIRONMENT || 'sandbox';
-const PAYPAL_BASE_URL = PAYPAL_ENVIRONMENT === 'sandbox' ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com';
-const MONGODB_URI = process.env.MONGODB_URI || '';
+
+const getPayPalBaseUrl = () => {
+  return PAYPAL_ENVIRONMENT === 'live'
+    ? 'https://api-m.paypal.com'
+    : 'https://api-m.sandbox.paypal.com';
+};
+
+const getPayPalAccessToken = async () => {
+  if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
+    throw new Error('PayPal credentials are not configured in environment variables.');
+  }
+  const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
+  const baseUrl = getPayPalBaseUrl();
+  const response = await fetch(`${baseUrl}/v1/oauth2/token`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${auth}`,
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: 'grant_type=client_credentials'
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error_description || 'Failed to retrieve PayPal access token');
+  }
+  return data.access_token;
+};
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '1234';
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
@@ -35,7 +65,9 @@ const orderSchema = new mongoose.Schema({
   items: [{
     name: String,
     quantity: Number,
-    unitPrice: Number
+    unitPrice: Number,
+    size: String,
+    color: String
   }],
   customer: {
     first_name: String,
@@ -44,6 +76,8 @@ const orderSchema = new mongoose.Schema({
     phone: String,
     address: String,
     city: String,
+    state: String,
+    zip: String,
     country: String
   },
   paymentId: String,
@@ -62,7 +96,9 @@ const productSchema = new mongoose.Schema({
   active: { type: Boolean, default: true },
   featured: { type: Boolean, default: true },
   soldOut: { type: Boolean, default: false },
-  image: { type: String }
+  image: { type: String },
+  sizes: { type: [String], default: ['S', 'M', 'L', 'XL', '2XL'] },
+  colors: { type: [String], default: ['Black', 'White'] }
 });
 
 const settingSchema = new mongoose.Schema({
@@ -95,20 +131,6 @@ const requireAdmin = (req, res, next) => {
 
 function money(value) { return Number(value).toFixed(2); }
 
-async function generatePayPalAccessToken() {
-  const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
-  const response = await fetch(`${PAYPAL_BASE_URL}/v1/oauth2/token`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Basic ${auth}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: 'grant_type=client_credentials'
-  });
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error_description || 'Failed to generate PayPal access token');
-  return data.access_token;
-}
 
 app.disable('x-powered-by');
 app.use(express.json({ limit: '10mb' }));
@@ -202,169 +224,246 @@ app.get('/api/settings', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 // === PAYPAL API ===
+app.get('/api/paypal/config', (req, res) => {
+  res.json({ clientId: PAYPAL_CLIENT_ID });
+});
+
 app.post('/api/paypal/create-order', async (req, res) => {
   try {
-    if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
-      return res.status(503).json({ error: 'PayPal is not configured. Add your Client ID and Secret to .env.' });
-    }
-    if (!MONGODB_URI) {
-      return res.status(503).json({ error: 'MongoDB is not configured. Add your MONGODB_URI to .env.' });
-    }
-
     const { cart, customer } = req.body;
     if (!Array.isArray(cart) || cart.length === 0) throw new Error('Cart is empty');
-    
+
     // Fetch fresh prices from DB
     const dbProducts = await Product.find({ active: true });
     const productMap = new Map(dbProducts.map(p => [p.name, p.price]));
-    
-    const items = cart.map(item => {
+
+    const finalItems = cart.map(item => {
       const dbPrice = productMap.get(item.name);
       if (dbPrice === undefined) throw new Error(`Unknown product: ${item.name}`);
       return {
         name: item.name,
-        quantity: 1, // Storefront sends individual items in cart array
-        unitPrice: dbPrice
+        quantity: Number(item.quantity) || 1,
+        unitPrice: dbPrice,
+        size: item.size || '',
+        color: item.color || ''
       };
     });
 
-    // Group items for PayPal format
-    const grouped = new Map();
-    for (const item of items) {
-      grouped.set(item.name, {
-        name: item.name,
-        quantity: (grouped.get(item.name)?.quantity || 0) + 1,
-        unitPrice: item.unitPrice
-      });
-    }
-    const finalItems = [...grouped.values()];
-
     const total = finalItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-    
-    // Get setting for currency
-    const settings = await Setting.findOne({ key: 'global' });
-    const currency = settings?.currency || CURRENCY;
-    const formattedAmount = money(total);
+    const amountStr = money(total);
 
-    const accessToken = await generatePayPalAccessToken();
-    const payload = {
-      intent: 'CAPTURE',
-      purchase_units: [
-        {
-          amount: {
-            currency_code: currency,
-            value: formattedAmount,
-            breakdown: {
-              item_total: {
-                currency_code: currency,
-                value: formattedAmount
-              }
-            }
-          },
-          items: finalItems.map(item => ({
-            name: item.name,
-            unit_amount: {
-              currency_code: currency,
-              value: money(item.unitPrice)
-            },
-            quantity: String(item.quantity)
-          }))
-        }
-      ]
-    };
+    // Get PayPal token
+    const accessToken = await getPayPalAccessToken();
+    const baseUrl = getPayPalBaseUrl();
 
-    const response = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders`, {
+    // Create PayPal order
+    const response = await fetch(`${baseUrl}/v2/checkout/orders`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({
+        intent: 'CAPTURE',
+        purchase_units: [{
+          amount: {
+            currency_code: CURRENCY.toUpperCase(),
+            value: amountStr
+          },
+          description: `Order for ${customer?.email || 'customer'}`
+        }],
+        application_context: {
+          return_url: `${BASE_URL}/success.html`,
+          cancel_url: `${BASE_URL}/`,
+          brand_name: 'JMUNZ Merch Factory',
+          landing_page: 'LOGIN',
+          locale: 'en-US',
+          user_action: 'PAY_NOW',
+          shipping_preference: 'GET_FROM_FILE'
+        }
+      })
     });
 
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to create PayPal order');
+    const paypalOrder = await response.json();
+    if (!response.ok) {
+      throw new Error(paypalOrder.message || 'Failed to create PayPal order');
+    }
 
-    await Order.create({
-      orderId: data.id,
+    // Create pending order in DB
+    const order = await Order.create({
+      orderId: paypalOrder.id,
       status: 'created',
-      amount: formattedAmount,
-      currency,
+      amount: amountStr,
+      currency: CURRENCY.toUpperCase(),
       items: finalItems,
       customer: customer || {}
     });
 
-    res.json({ id: data.id });
+    res.json({ id: paypalOrder.id, links: paypalOrder.links });
   } catch (error) {
-    res.status(400).json({ error: error.message || 'Unable to create payment' });
+    res.status(400).json({ error: error.message || 'Unable to create PayPal order' });
   }
 });
 
 app.post('/api/paypal/capture-order', async (req, res) => {
-  const { orderID } = req.body;
-  if (!orderID) return res.status(400).json({ error: 'Order ID is required' });
+  const { paypalOrderId } = req.body;
+  if (!paypalOrderId) return res.status(400).json({ error: 'PayPal Order ID is required' });
 
   try {
-    const accessToken = await generatePayPalAccessToken();
-    const response = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders/${orderID}/capture`, {
+    const accessToken = await getPayPalAccessToken();
+    const baseUrl = getPayPalBaseUrl();
+
+    // Capture order
+    const response = await fetch(`${baseUrl}/v2/checkout/orders/${paypalOrderId}/capture`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
       }
     });
 
-    const data = await response.json();
-    
-    // Update local order
-    const updateData = {
-      status: data.status === 'COMPLETED' ? 'paid' : data.status.toLowerCase(),
-      paymentId: data.id
-    };
-
-    if (data.status === 'COMPLETED') {
-        const capture = data.purchase_units[0].payments.captures[0];
-        updateData.paidAmount = capture.amount.value;
-        updateData.paidCurrency = capture.amount.currency_code;
+    const captureData = await response.json();
+    if (!response.ok) {
+      throw new Error(captureData.message || 'Failed to capture PayPal order');
     }
 
-    await Order.findOneAndUpdate({ orderId: orderID }, updateData, { new: true, upsert: true });
+    if (captureData.status === 'COMPLETED') {
+      const shippingDetails = captureData.purchase_units[0].shipping || {};
+      const address = shippingDetails.address || {};
+      const customerName = shippingDetails.name?.full_name || '';
+      const nameParts = customerName.split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
 
-    if (!response.ok) throw new Error(data.message || 'Failed to capture PayPal order');
-    
-    res.json(data);
+      const updateData = {
+        status: 'paid',
+        paymentId: captureData.id,
+        paidAmount: money(captureData.purchase_units[0].payments.captures[0].amount.value),
+        paidCurrency: captureData.purchase_units[0].payments.captures[0].amount.currency_code,
+        customer: {
+          first_name: firstName,
+          last_name: lastName,
+          email: captureData.payer?.email_address || '',
+          phone: captureData.payer?.phone?.phone_number?.national_number || '',
+          address: address.address_line_1 || '',
+          city: address.admin_area_2 || '',
+          state: address.admin_area_1 || '',
+          zip: address.postal_code || '',
+          country: address.country_code || ''
+        }
+      };
+
+      const order = await Order.findOneAndUpdate({ orderId: paypalOrderId }, updateData, { new: true });
+      res.json({ success: true, order });
+    } else {
+      res.status(400).json({ error: `PayPal payment status is ${captureData.status}` });
+    }
   } catch (error) {
-    res.status(400).json({ error: error.message || 'Unable to capture payment' });
+    res.status(400).json({ error: error.message || 'Unable to capture PayPal order' });
   }
 });
 
-app.get('/api/orders/:orderId', async (req, res) => {
+// === STRIPE API ===
+app.post('/api/stripe/create-checkout-session', async (req, res) => {
   try {
-    const order = await Order.findOne({ orderId: req.params.orderId });
-    if (!order) return res.status(404).json({ error: 'Order not found' });
-    res.json({
-      orderId: order.orderId,
-      status: order.status,
-      amount: order.amount,
-      currency: order.currency,
-      updatedAt: order.updatedAt
+    const { cart, customer } = req.body;
+    if (!Array.isArray(cart) || cart.length === 0) throw new Error('Cart is empty');
+
+    // Fetch fresh prices from DB
+    const dbProducts = await Product.find({ active: true });
+    const productMap = new Map(dbProducts.map(p => [p.name, p.price]));
+
+    const finalItems = cart.map(item => {
+      const dbPrice = productMap.get(item.name);
+      if (dbPrice === undefined) throw new Error(`Unknown product: ${item.name}`);
+      return {
+        name: item.name,
+        quantity: Number(item.quantity) || 1,
+        unitPrice: dbPrice,
+        size: item.size || '',
+        color: item.color || ''
+      };
     });
+
+    const total = finalItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+    const amountStr = money(total);
+    const orderId = 'stripe_' + Math.random().toString(36).substring(2, 15);
+
+    // Create pending order in DB
+    const order = await Order.create({
+      orderId: orderId,
+      status: 'created',
+      amount: amountStr,
+      currency: CURRENCY.toUpperCase(),
+      items: finalItems,
+      customer: customer || {}
+    });
+
+    // Map to Stripe Line Items
+    const lineItems = finalItems.map(item => ({
+      price_data: {
+        currency: CURRENCY,
+        product_data: {
+          name: `${item.name} (${item.size} / ${item.color})`,
+        },
+        unit_amount: Math.round(item.unitPrice * 100),
+      },
+      quantity: item.quantity,
+    }));
+
+    // Create Stripe checkout session
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: lineItems,
+      mode: 'payment',
+      customer_email: customer?.email || undefined,
+      client_reference_id: orderId,
+      metadata: { orderId: orderId },
+      success_url: `${BASE_URL}/success.html?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${BASE_URL}/`,
+    });
+
+    res.json({ url: session.url });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch order' });
+    console.error('Failed to create Stripe checkout session:', error);
+    res.status(400).json({ error: error.message || 'Unable to create Stripe checkout session' });
   }
 });
 
-app.get('/api/paypal/client-id', (req, res) => {
-    res.json({ clientId: PAYPAL_CLIENT_ID });
+app.get('/api/stripe/checkout-success', async (req, res) => {
+  const { session_id } = req.query;
+  if (!session_id) return res.status(400).json({ error: 'Session ID is required' });
+
+  try {
+    const session = await stripe.checkout.sessions.retrieve(session_id);
+    const orderId = session.client_reference_id || session.metadata?.orderId;
+    if (!orderId) throw new Error('Order reference not found in Stripe session.');
+
+    if (session.payment_status === 'paid') {
+      const updateData = {
+        status: 'paid',
+        paymentId: session.payment_intent || session.id,
+        paidAmount: money(session.amount_total / 100),
+        paidCurrency: session.currency?.toUpperCase()
+      };
+
+      const order = await Order.findOneAndUpdate({ orderId: orderId }, updateData, { new: true });
+      if (!order) throw new Error('Order not found in database.');
+
+      res.json({ success: true, order });
+    } else {
+      res.status(400).json({ error: `Stripe checkout session status is ${session.payment_status}` });
+    }
+  } catch (error) {
+    console.error('Failed to verify Stripe checkout session:', error);
+    res.status(400).json({ error: error.message || 'Unable to verify Stripe checkout session' });
+  }
 });
 
-app.get('/health', (_req, res) => res.json({ ok: true, environment: PAYPAL_ENVIRONMENT }));
+app.get('/health', (_req, res) => res.json({ ok: true, gateways: ['paypal', 'stripe'] }));
 
 app.listen(PORT, () => {
   console.log(`JMUNZ store running at http://localhost:${PORT}`);
-  console.log(`PayPal mode: ${PAYPAL_ENVIRONMENT.toUpperCase()}`);
-  if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) console.warn('PayPal credentials are not configured yet.');
   if (!MONGODB_URI) console.warn('MongoDB URI is not configured yet.');
 });
