@@ -87,7 +87,7 @@ button{cursor:pointer}
 @keyframes ytBlink{to{opacity:.28}}
 @keyframes ytClick{50%{transform:scale(.92)}100%{transform:scale(1)}}
 @media(max-width:980px){.yt-header-copy{display:none}.youtube-header-link{padding-right:5px}.youtube-floating-card{right:-5%;top:5%;transform:scale(.88) rotate(4deg)}}
-@media(max-width:720px){.youtube-header-link{display:none}.youtube-hero-cta{margin-top:10px}.yt-hero-icon{width:41px;height:41px}.yt-hero-text{min-width:120px}.youtube-floating-card{display:none}.menu-youtube-link{font-size:9vw}.intro-copy{top:11vh}.intro-copy h1{margin-bottom:18px}.intro-copy p{margin-bottom:15px}.start-button{margin-top:20px}}
+@media(max-width:720px){.youtube-header-link{display:none}.youtube-hero-cta{display:none!important}.yt-hero-icon{width:41px;height:41px}.yt-hero-text{min-width:120px}.youtube-floating-card{display:none}.menu-youtube-link{font-size:9vw}.intro-copy{top:11vh}.intro-copy h1{margin-bottom:18px}.intro-copy p{margin-bottom:15px}.start-button{margin-top:20px}}
 
 
 /* Full all-merch catalog */
