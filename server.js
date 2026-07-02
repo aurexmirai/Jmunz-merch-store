@@ -111,7 +111,8 @@ const settingSchema = new mongoose.Schema({
   currency: String,
   youtubeUrl: String,
   officialStoreUrl: String,
-  bgSoundUrl: String,
+  officialStoreUrl: String,
+  showOfficialStore: { type: Boolean, default: true },
   soundEnabled: { type: Boolean, default: true },
   adminPassword: String,
   productCategories: String

@@ -61,6 +61,7 @@
           <label class="wide">Shop description<textarea name="shopDescription" rows="3"></textarea></label>
           <label>YouTube channel URL<input name="youtubeUrl" type="url"></label>
           <label>Official store URL<input name="officialStoreUrl" type="url"></label>
+          <label class="wide" style="display:flex;align-items:center;gap:10px;"><input type="checkbox" name="showOfficialStore" style="width:auto;margin:0;"> Show Official Store Link in Catalog Footer</label>
           <label class="wide" style="display:flex;align-items:center;gap:10px;"><input type="checkbox" name="soundEnabled" style="width:auto;margin:0;"> Enable Background Sound (Shows the sound button on main site)</label>
           <label class="wide">Background Sound File (MP3) <small>Upload a small .mp3 file (max 3MB). This will play when the sound toggle is active.</small>
             <input type="file" id="bgSoundFile" accept=".mp3,audio/mpeg">
@@ -283,6 +284,7 @@ $('#settings-form').addEventListener('submit', async e => {
   e.preventDefault();
   const formData = Object.fromEntries(new FormData(e.currentTarget).entries());
   formData.soundEnabled = e.currentTarget.elements.soundEnabled.checked;
+  formData.showOfficialStore = e.currentTarget.elements.showOfficialStore.checked;
   try {
     const res = await fetch('/api/admin/settings', {
       method: 'PUT',

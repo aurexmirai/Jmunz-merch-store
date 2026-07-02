@@ -145,7 +145,11 @@ function applySettings() {
     const sLink = $('.catalog-footer a');
     if(sLink) sLink.href = backendSettings.officialStoreUrl;
   }
-  
+  const catFooter = $('.catalog-footer');
+  if (catFooter) {
+    catFooter.style.display = backendSettings.showOfficialStore === false ? 'none' : '';
+  }
+
   const soundToggle = $('.sound-toggle');
   if (soundToggle) {
     soundToggle.style.display = backendSettings.soundEnabled === false ? 'none' : '';
