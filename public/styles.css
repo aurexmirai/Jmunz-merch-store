@@ -156,11 +156,13 @@ button{cursor:pointer}
 .checkout-shell {
   width: 100%;
   max-width: 900px;
+  max-height: 100vh;
   background: var(--cream);
   border: 2px solid var(--ink);
   border-radius: 16px;
   box-shadow: 0 35px 80px rgba(0, 0, 0, 0.6);
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   transform: translateY(40px) scale(0.98);
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s;
 }
@@ -168,6 +170,9 @@ button{cursor:pointer}
   transform: translateY(0) scale(1);
 }
 .checkout-head {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -412,9 +417,9 @@ button{cursor:pointer}
 
 @media (max-width: 768px) {
   .checkout-panel { padding: 0; }
-  .checkout-shell { max-height: 100vh; height: 100vh; border-radius: 0; border: none; }
-  .checkout-layout { grid-template-columns: 1fr; gap: 28px; padding: 24px; }
-  .checkout-form { grid-template-columns: 1fr; }
+  .checkout-shell { max-height: 100vh; height: 100vh; border-radius: 0; border: none; overflow-y: auto; overflow-x: hidden; }
+  .checkout-layout { display: flex; flex-direction: column-reverse; gap: 28px; padding: 24px; padding-bottom: 40px; }
+  .checkout-form { display: flex; flex-direction: column; gap: 14px; }
 }
 \n
 /* Product Modal */
