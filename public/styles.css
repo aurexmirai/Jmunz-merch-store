@@ -1072,3 +1072,18 @@ button{cursor:pointer}
   font: 700 0.58rem var(--display);
   letter-spacing: 0.12em;
 }
+
+.phone-input-container {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+.phone-input-container select {
+  width: 140px;
+  flex-shrink: 0;
+  margin-top: 0 !important;
+}
+.phone-input-container input {
+  flex-grow: 1;
+  margin-top: 0 !important;
+}

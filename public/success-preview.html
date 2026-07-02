@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
@@ -21,26 +21,17 @@
       position: relative;
       z-index: 2;
       width: 100%;
-      max-width: 580px;
-      background: var(--cream);
+      max-width: 600px;
+      background: #ffffff;
       border: 2px solid var(--ink);
-      border-radius: 20px;
+      border-radius: 16px;
       padding: 40px 30px;
-      box-shadow: 8px 8px 0 var(--ink);
+      box-shadow: 0 20px 0 rgba(16, 20, 18, 0.08);
       margin-top: 20px;
       text-align: center;
-      animation: fadeInUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    }
-    .factory-grid {
-      position: fixed;
-      inset: 0;
-      z-index: 1;
-      background-image: linear-gradient(rgba(16, 20, 18, 0.085) 1px, transparent 1px), linear-gradient(90deg, rgba(16, 20, 18, 0.085) 1px, transparent 1px);
-      background-size: 42px 42px;
-      pointer-events: none;
     }
     .success-icon {
-      font: 700 3rem var(--display);
+      font: 700 4.5rem var(--display);
       color: var(--acid);
       background: var(--ink);
       width: 90px;
@@ -150,7 +141,6 @@
   </style>
 </head>
 <body>
-  <div class="factory-grid"></div>
   <canvas aria-hidden="true" id="grain"></canvas>
 
   <header class="topbar" style="mix-blend-mode: normal;">
@@ -224,62 +214,18 @@
     const paypalToken = urlParams.get('token');
     const stripeSessionId = urlParams.get('session_id');
 
-    async function confirmPayment() {
-      let res;
-      try {
-        if (paypalToken) {
-          res = await fetch('/api/paypal/capture-order', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ paypalOrderId: paypalToken })
-          });
-        } else if (stripeSessionId) {
-          res = await fetch(`/api/stripe/checkout-success?session_id=${stripeSessionId}`);
-        } else {
-          document.getElementById('loading-section').style.display = 'none';
-          document.getElementById('error-section').style.display = 'block';
-          document.getElementById('error-msg').textContent = 'No valid transaction token found in the URL.';
-          return;
+    
+        // MOCK DATA
+        document.getElementById('order-ref-id').textContent = 'MOCK-123456';
+        document.getElementById('order-total-price').textContent = '.00';
+        document.getElementById('order-items-list').innerHTML = '<div class="order-row"><span>1x CLASSIC TEE <small style="opacity:0.6;">(L / Black)</small></span><strong>.00</strong></div>';
+        if(document.getElementById('shipping-address-box')) {
+          document.getElementById('shipping-address-box').innerHTML = '<strong>John Doe</strong><br>123 Main St<br>Anytown, NY 10001<br>United States';
         }
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to verify transaction.');
-
-        // Render details
-        const order = data.order;
-        document.getElementById('order-ref-id').textContent = order.orderId;
-        document.getElementById('order-total-price').textContent = `$${Number(order.amount).toFixed(2)}`;
-
-        const itemsHtml = order.items.map(item => `
-          <div class="order-row">
-            <span>${item.quantity}x ${item.name} <small style="opacity:0.6;">(${item.size} / ${item.color})</small></span>
-            <strong>$${(item.unitPrice * item.quantity).toFixed(2)}</strong>
-          </div>
-        `).join('');
-        document.getElementById('order-items-list').innerHTML = itemsHtml;
-
-        const customer = order.customer;
-        const addressHtml = `
-          <strong>${customer.first_name} ${customer.last_name}</strong><br>
-          ${customer.address}<br>
-          ${customer.city}, ${customer.state} ${customer.zip}<br>
-          ${customer.country}
-        `;
-        document.getElementById('shipping-address-box').innerHTML = addressHtml;
-
         document.getElementById('loading-section').style.display = 'none';
         document.getElementById('success-content').style.display = 'block';
 
-      } catch (err) {
-        document.getElementById('loading-section').style.display = 'none';
-        document.getElementById('error-section').style.display = 'block';
-        document.getElementById('error-msg').textContent = err.message;
-      }
-    }
-
-    confirmPayment();
   </script>
 </body>
 </html>
+

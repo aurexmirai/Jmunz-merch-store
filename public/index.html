@@ -296,9 +296,9 @@
           <label><input type="radio" name="pp_size" value="M"><span>M</span></label>
           <label><input type="radio" name="pp_size" value="L"><span>L</span></label>
           <label><input type="radio" name="pp_size" value="XL"><span>XL</span></label>
-          <label><input type="radio" name="pp_size" value="2XL" data-price-add="2.00"><span>2XL (+$2)</span></label>
-          <label><input type="radio" name="pp_size" value="3XL" data-price-add="4.00"><span>3XL (+$4)</span></label>
-          <label><input type="radio" name="pp_size" value="4XL" data-price-add="6.00"><span>4XL (+$6)</span></label>
+          <label><input type="radio" name="pp_size" value="2XL"><span>2XL</span></label>
+          <label><input type="radio" name="pp_size" value="3XL"><span>3XL</span></label>
+          <label><input type="radio" name="pp_size" value="4XL"><span>4XL</span></label>
         </div>
       </div>
 
@@ -353,7 +353,12 @@
 <label>FIRST NAME<input autocomplete="given-name" name="first_name" required=""/></label>
 <label>LAST NAME<input autocomplete="family-name" name="last_name" required=""/></label>
 <label class="full">EMAIL<input autocomplete="email" name="email" required="" type="email"/></label>
-<label class="full">PHONE<input autocomplete="tel" name="phone" required=""/></label>
+  <label class="full">PHONE
+    <div class="phone-input-container">
+      <select name="phone_country_code" class="phone-code-select" required=""></select>
+      <input autocomplete="tel" name="phone" required="" type="tel"/>
+    </div>
+  </label>
 <label class="full">DELIVERY ADDRESS<input autocomplete="street-address" name="address" required=""/></label>
 <label>CITY<input autocomplete="address-level2" name="city" required=""/></label>
 <label>STATE / PROVINCE<input autocomplete="address-level1" name="state" required=""/></label>

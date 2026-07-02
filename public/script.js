@@ -276,6 +276,70 @@ const checkoutPanel=$('.checkout-panel');
 const checkoutForm=$('#checkout-form');
 const checkoutState=$('.payment-state');
 
+const countries = [
+  { name: "United States", code: "+1" },
+  { name: "Canada", code: "+1" },
+  { name: "United Kingdom", code: "+44" },
+  { name: "Australia", code: "+61" },
+  { name: "Sri Lanka", code: "+94" },
+  { name: "Germany", code: "+49" },
+  { name: "France", code: "+33" },
+  { name: "Italy", code: "+39" },
+  { name: "Spain", code: "+34" },
+  { name: "Netherlands", code: "+31" },
+  { name: "New Zealand", code: "+64" },
+  { name: "Japan", code: "+81" },
+  { name: "India", code: "+91" },
+  { name: "Singapore", code: "+65" },
+  { name: "Brazil", code: "+55" },
+  { name: "South Africa", code: "+27" },
+  { name: "United Arab Emirates", code: "+971" },
+  { name: "Saudi Arabia", code: "+966" },
+  { name: "Mexico", code: "+52" },
+  { name: "Ireland", code: "+353" },
+  { name: "Switzerland", code: "+41" },
+  { name: "Sweden", code: "+46" },
+  { name: "Norway", code: "+47" },
+  { name: "Denmark", code: "+45" },
+  { name: "Belgium", code: "+32" },
+  { name: "Austria", code: "+43" },
+  { name: "Portugal", code: "+351" },
+  { name: "Turkey", code: "+90" },
+  { name: "Poland", code: "+48" },
+  { name: "South Korea", code: "+82" },
+  { name: "Malaysia", code: "+60" },
+  { name: "Thailand", code: "+66" },
+  { name: "Philippines", code: "+63" },
+  { name: "Indonesia", code: "+62" },
+  { name: "Vietnam", code: "+84" },
+  { name: "Pakistan", code: "+92" },
+  { name: "Bangladesh", code: "+880" }
+];
+
+function initCountrySelectors(defaultCountry) {
+  const countrySelect = $('input[name="country"]') || $('select[name="country"]');
+  const phoneCodeSelect = $('select[name="phone_country_code"]');
+  if (!phoneCodeSelect) return;
+
+  const sortedCountries = [...countries].sort((a, b) => a.name.localeCompare(b.name));
+
+  phoneCodeSelect.innerHTML = sortedCountries
+    .filter(c => c.code)
+    .map(c => `<option value="${c.code}" ${c.name === defaultCountry ? 'selected' : ''}>${c.code} (${c.name})</option>`)
+    .join('');
+}
+initCountrySelectors("United States");
+
+function getCustomerData() {
+  const customer = Object.fromEntries(new FormData(checkoutForm).entries());
+  if (customer.phone_country_code && customer.phone) {
+    customer.phone = `${customer.phone_country_code} ${customer.phone}`;
+    delete customer.phone_country_code;
+  }
+  return customer;
+}
+
+
 function cartTotal(){return cart.reduce((sum,item)=>sum+(Number(item.price)*Number(item.quantity||1)),0)}
 function setPaymentState(message,type='info'){
   checkoutState.textContent=message;
@@ -322,7 +386,7 @@ if (stripeSubmitBtn) {
       stripeSubmitBtn.textContent = 'CREATING CHECKOUT...';
       setPaymentState('Creating Stripe Checkout session...', 'info');
       
-      const customer = Object.fromEntries(new FormData(checkoutForm).entries());
+      const customer = getCustomerData();
       const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -395,7 +459,7 @@ function renderPayPalButtons() {
     createOrder: async () => {
       try {
         setPaymentState('Creating PayPal order...', 'info');
-        const customer = Object.fromEntries(new FormData(checkoutForm).entries());
+        const customer = getCustomerData();
         const response = await fetch('/api/paypal/create-order', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
@@ -479,7 +543,7 @@ async function renderPayPalCardFields() {
           setPaymentState('Creating order...', 'info');
           submitBtn.disabled = true;
           submitBtn.textContent = 'CREATING ORDER...';
-          const customer = Object.fromEntries(new FormData(checkoutForm).entries());
+          const customer = getCustomerData();
           const response = await fetch('/api/paypal/create-order', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
