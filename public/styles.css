@@ -425,7 +425,7 @@ button{cursor:pointer}
 /* Product Modal */
 .product-modal-panel { position: fixed; inset: 0; z-index: 140; background: rgba(16,20,18,0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; padding: 20px; }
 .product-modal-panel.open { opacity: 1; pointer-events: auto; }
-.product-modal-shell { position: relative; width: 100%; max-width: 800px; background: var(--cream); border: 1px solid var(--line); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); overflow: hidden; transform: translateY(40px); transition: transform 0.4s ease; }
+.product-modal-shell { position: relative; width: 100%; max-width: 800px; max-height: 90vh; background: var(--cream); border: 1px solid var(--line); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); overflow-y: auto; overflow-x: hidden; transform: translateY(40px); transition: transform 0.4s ease; }
 .product-modal-panel.open .product-modal-shell { transform: translateY(0); }
 .pm-close { position: absolute; right: 20px; top: 20px; background: rgba(255,255,255,0.8); border: 1px solid var(--line); border-radius: 50%; width: 40px; height: 40px; font-size: 1.5rem; display: grid; place-items: center; z-index: 10; line-height: 1; cursor: pointer; }
 .pm-layout { display: grid; grid-template-columns: 1fr 1fr; min-height: 400px; color: var(--ink); }
@@ -446,12 +446,14 @@ button{cursor:pointer}
 .pm-add-btn:hover { transform: translateY(-2px); }
 .pm-add-btn b { background: rgba(255,255,255,0.2); width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; }
 @media (max-width: 768px) {
-  .pm-layout { grid-template-columns: 1fr; }
+  .product-modal-panel { padding: 0; }
+  .product-modal-shell { max-height: 100vh; height: 100vh; border-radius: 0; border: none; overflow-y: auto; overflow-x: hidden; }
+  .pm-layout { grid-template-columns: 1fr; min-height: auto; }
   .pm-image-wrap { height: 250px; padding: 20px; }
   .pm-details { padding: 25px 20px; }
   .pm-details h2 { font-size: 1.8rem; }
   .pm-option-group { margin-top: 20px; }
-  .pm-add-btn { margin-top: 30px; }
+  .pm-add-btn { margin-top: 30px; margin-bottom: 30px; }
 }
 
 
