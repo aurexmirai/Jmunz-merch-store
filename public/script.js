@@ -843,7 +843,7 @@ function openProductPage(product) {
   
   // Set Description & Size Chart
   const catKey = product.category || 'default';
-  $('#pp-desc-content').innerHTML = ppDescriptions[catKey] || ppDescriptions['default'];
+  $('#pp-desc-content').innerHTML = product.description ? `<p>${product.description}</p>` : (ppDescriptions[catKey] || ppDescriptions['default']);
   $('#pp-size-chart-content').innerHTML = ppSizeCharts[catKey] || ppSizeCharts['default'];
   
   // Set Image
@@ -927,7 +927,7 @@ $('#pp-qty-plus').addEventListener('click', () => {
 
 $$('input[name="pp_size"]').forEach(r => r.addEventListener('change', updatePpPrice));
 
-$('.product-page-back').addEventListener('click', closeProductPage);
+$('.product-page-back').addEventListener('click', () => { closeProductPage(); openCatalog(); });
 
 // Connect Cart trigger inside product page header
 $('.product-page-cart-trigger').addEventListener('click', openCart);
